@@ -29,6 +29,7 @@
     if ((m = h.match(/^challenge-([\w-]+)$/))) return { name: 'challenge', id: m[1] };
     if (h === 'profiles') return { name: 'profiles' };
     if (h === 'family' || h === 'parents') return { name: 'family' };
+    if (h === 'family-demo') return { name: 'family', demo: true };
     if ((m = h.match(/^report-([\w]+)$/))) return { name: 'report', id: m[1] };
     return { name: 'home' };
   }
@@ -235,33 +236,6 @@
       <p class="muted small">Profiles and progress are saved only in this browser. Nothing is sent to a server.</p>`;
   }
 
-  function family() {
-    const kids = CM.store.children();
-    const cards = kids.map(c => CM.store.withChild(c.id, () => {
-      const d = S(), stats = gradeStats(c.grade), time = Object.values(d.missions).reduce((s, p) => s + (p.time || 0), 0);
-      const weak = CM.needsWork().length, mastered = CM.MISSIONS.filter(m => (CM.store.peek(m.id) || {}).mastered).length;
-      const tags = {}; d.log.forEach(l => tags[l.tag] = (tags[l.tag] || 0) + 1);
-      const top = Object.entries(tags).sort((a, b) => b[1] - a[1])[0];
-      const pct = stats.withMissions ? Math.round(100 * stats.mastered / stats.withMissions) : 0;
-      const next = CM.recommend(c.grade, 1)[0];
-      return `<article class="fcard">
-        <div class="fc-head">${avatar(c, 'lg')}<div class="fc-id"><h2>${esc(c.name)}</h2><p class="muted">${CM.grade(c.grade).label} \u00b7 ${lastActive(d)}</p></div></div>
-        <div class="meter" role="img" aria-label="${stats.mastered} of ${stats.withMissions} grade skills with missions mastered"><span style="width:${pct}%"></span></div>
-        <p class="muted small">${stats.withMissions ? `${stats.mastered} of ${stats.withMissions} ${CM.grade(c.grade).label} skills with missions mastered` : `No missions yet for ${CM.grade(c.grade).label}`}</p>
-        <dl class="fstats"><div><dt>Problems</dt><dd>${d.activity.length}</dd></div><div><dt>Time</dt><dd>${d.activity.length ? fmtTime(time) : '\u2013'}</dd></div><div><dt>Mastered</dt><dd>${mastered}</dd></div><div><dt>Needs work</dt><dd>${weak}</dd></div></dl>
-        ${top ? `<p class="small"><b>Most common mistake:</b> ${esc(top[0])} (${top[1]}\u00d7)</p>` : ''}
-        ${next ? `<p class="small"><b>Suggested next:</b> ${esc(CM.mission(next.id).title)}</p>` : ''}
-        <div class="actions"><a class="btn btn-ghost" href="#report-${c.id}">Full report</a><button type="button" class="btn btn-secondary" data-app="pick" data-id="${c.id}">Learn as ${esc(c.name)}</button></div>
-      </article>`;
-    }));
-    const total = kids.reduce((s, c) => s + c.data.activity.length, 0);
-    return `<p class="eyebrow">Parents & Teachers</p><h1>Family dashboard</h1>
-      <p class="level">${plural(kids.length, 'child', 'children')} \u00b7 ${plural(total, 'problem')} completed in all</p>
-      ${kids.length ? `<div class="fgrid">${cards.join('')}</div>` : '<p class="empty">No profiles yet.</p>'}
-      <div class="actions"><a class="btn btn-primary" href="#profiles" data-app="add-go">Add child</a><a class="btn btn-ghost" href="#profiles">Manage profiles</a></div>
-      <p class="muted small">All profiles and progress live in this browser only. Another browser, device, or a cleared cache starts empty.</p>`;
-  }
-
   /* ---------- render ---------- */
   function render() {
     header();
@@ -277,7 +251,7 @@
     else if (route.name === 'challenges') view.innerHTML = challengesIndex();
     else if (route.name === 'challenge') { if (CM.CHALLENGES.some(c => c.id === route.id)) CM.Challenge.open(route.id, view); else view.innerHTML = challengesIndex(); }
     else if (route.name === 'profiles') view.innerHTML = profiles();
-    else if (route.name === 'family') view.innerHTML = family();
+    else if (route.name === 'family') { view.innerHTML = CM.Parents.render({ demo: route.demo }); CM.Parents.after(view); }
     else if (route.name === 'report') view.innerHTML = report(route.id);
     if (route.name === 'profiles' && form) { const f = $('#fName'); if (f && !f.value) f.focus({ preventScroll: true }); }
   }
@@ -288,7 +262,8 @@
     const el = ev.target.closest('[data-app]');
     if (!el) return;
     const a = el.dataset.app, id = el.dataset.id;
-    if (a === 'reset') confirmReset = true;
+    if (a === 'pd-focus') CM.Parents.focus = id;
+    else if (a === 'reset') confirmReset = true;
     else if (a === 'reset-no') confirmReset = false;
     else if (a === 'reset-yes') { CM.store.resetChild(id); confirmReset = false; }
     else if (a === 'pick') { CM.store.select(id); CM.store.save(); form = null; confirmDel = null; if (location.hash === '#home') go(); else location.hash = 'home'; return; }
