@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {}, console };
 ctx.global = ctx; ctx.window = ctx;
 vm.createContext(ctx);
-for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
+for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js', 'js/parents.js'])
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const CM = ctx.CM;
 CM.store.load(null);
@@ -152,6 +152,29 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
   CM.store.removeChild(b.id);
   ok(!CM.store.child(b.id) && CM.store.active() === null, 'delete child clears selection');
   CM.store.load(null);
+})();
+
+/* 5b. Family dashboard analytics */
+(() => {
+  const P = CM.Parents, H = 3600e3, now = new Date(2026, 10, 4, 18).getTime(), day = n => new Date(2026, 10, 4 - n, 17).getTime();
+  ok(P.streak([{ t: day(0) }, { t: day(1) }, { t: day(2) }, { t: day(4) }], now) === 3, 'parents: streak counts days in a row');
+  ok(P.streak([{ t: day(1) }, { t: day(2) }], now) === 2, 'parents: streak survives until the end of today');
+  ok(P.streak([{ t: day(2) }], now) === 0, 'parents: a missed day ends the streak');
+  ok(P.estimateSeconds([{ t: now - H }, { t: now - H + 60e3 }, { t: now - H + 30 * 60e3 }], now - 2 * H, now) === 30 + 60 + 30, 'parents: time estimate caps long gaps');
+  const acts = [{ mission: 'x', tier: 3, helped: false, t: 1 }, { mission: 'x', tier: 3, helped: true, t: 2 }, { mission: 'x', tier: 2, helped: false, t: 3 }, { mission: 'y', tier: 1, helped: false, t: 4 }, { mission: 'x', tier: 3, helped: false, t: 5 }, { mission: 'x', tier: 3, helped: false, t: 6 }];
+  ok(P.masteredAt(acts, 'x') === 6 && P.masteredAt(acts, 'y') === 0, 'parents: mastery time replays the mastery rule');
+  const before = JSON.stringify(CM.store.family);
+  const fam = P.demoFamily(now);
+  ok(JSON.stringify(CM.store.family) === before, 'parents: the sample family never touches the real store');
+  ok(fam.children.length === 2 && fam.children.every(c => c.data.activity.length > 50), 'parents: sample family has weeks of practice');
+  const st = P.withFamily(fam, () => fam.children.map(c => CM.store.withChild(c.id, () => P.stats(c, now))));
+  ok(st.every(s => s.ring.length && s.ring.some(m => m.status === 'mastered') && s.ring.some(m => m.status !== 'mastered')), 'parents: sample shows a mix of mastered and unmastered missions');
+  ok(st.every(s => s.accuracy >= 0 && s.accuracy <= 100 && s.streak >= 0), 'parents: stats are in range');
+  P._demo = fam;
+  const html = P.render({ demo: true });
+  ok(html.includes('Sample family') && !/undefined|NaN|\$\{/.test(html), 'parents: sample dashboard renders cleanly');
+  ok(!P.render({}).includes('NaN'), 'parents: empty family renders');
+  P._demo = null;
 })();
 
 /* 6. Read-aloud for pre-readers */
