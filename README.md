@@ -11,6 +11,7 @@ data/standards.js     Generated. Every objective PK–7 and Algebra I with ID, t
 data/scope.js         Generated. The Scope & Sequence table (I/D/M by grade, PK–8).
 data/curriculum.js    Grades, the grade 8 mapping, missions, challenges, Math Lab tools.
 js/core.js            Curriculum index, learning-path builder, progress store, mastery rules, recommendations.
+js/speech.js          Read-aloud for K–2 missions (browser voice, Web Speech API). Pure text helpers are tested under Node.
 js/types/*.js         One file per mission type. Each exports init, view, handle, check, hint, show, explain.
 js/engine.js          Runs any mission type: challenge → check → hints → worked solution → explanation → mastery.
 js/lab.js             Math Lab tools.
@@ -66,6 +67,18 @@ The document has no 8th Grade section. The app's grade 8 path has two clearly la
 | Family profiles (unlimited children) and family dashboard | Built, stored in this browser (localStorage) |
 | Per-child report for parents and teachers | Built |
 | Accounts, classes, sync, teacher roster | Not built |
-| Audio for pre-readers | Not built |
+| Read-aloud for pre-readers (K–2) | Built: instructions, hints, feedback and explanations, with Hear it and an on/off toggle per child. Uses the device's built-in voice, so quality depends on the device. |
 
 Missions cover 19 of the 480 skills on the K–8 path. The rest of the path lists skills with “No mission yet.”
+
+## Read-aloud
+
+Missions in the K–2 band read themselves aloud with the browser's own voice (`speechSynthesis`). Nothing is downloaded or sent anywhere.
+
+- A new problem reads its instructions. Hints, feedback, and the explanation are read when they appear.
+- In Count and Build, each tap says the next number, so the child hears one number per object.
+- **Hear it** repeats; the speaker button turns reading off or on for that child (saved with the child's progress).
+- iPad and iPhone only start speech from a tap, so the first tap anywhere in the app unlocks the voice.
+- The voice is picked from the device's US English voices, preferring natural ones (Samantha, Ava, Google US English, Microsoft Aria/Jenny).
+
+Not tested on a real iPad yet: the tests use a stand-in voice.
