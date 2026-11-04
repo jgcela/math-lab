@@ -17,14 +17,14 @@
     const stretch = !!opts.stretch;
     const { item, tier } = CM.pickItem(mission, prog, stretch);
     clearTimeout(timer); timer = null;
-    r = { mission, item, tier, stretch, prog, attempts: 0, hint: 0, solved: false, err: null, msg: null, tone: null, events: [], tick: Date.now() };
+    r = { mission, item, tier, stretch, prog, attempts: 0, hint: 0, solved: false, err: null, msg: null, tone: null, events: [], tick: Date.now(), speak: 'prompt' };
     CM.TYPES[mission.type].init(r);
     CM.store.state.lastMission = missionId;
     CM.store.save();
     render();
   };
 
-  E.stop = function () { clearTimeout(timer); timer = null; endDrag(); if (r) { tick(); CM.store.save(); } r = null; };
+  E.stop = function () { CM.Speech.stop(); clearTimeout(timer); timer = null; endDrag(); if (r) { tick(); CM.store.save(); } r = null; };
 
   function tick() {
     if (!r) return;
@@ -40,11 +40,11 @@
     tick();
     const res = type().check(r);
     if (res.ok) return finish(r.attempts > 0 || r.hint > 0, false, res.note);
-    if (res.nudge) { r.msg = res.nudge; r.tone = 'info'; return render(); }
+    if (res.nudge) { r.msg = res.nudge; r.tone = 'info'; r.speak = 'msg'; return render(); }
     r.err = res.err;
     CM.logMistake(r.mission, res.tag, type().text(r) + (r.answer ? ` \u2192 ${r.answer}` : ''));
     r.attempts++; r.hint = Math.min(r.hint + 1, 2);
-    r.msg = (r.hint === 1 ? 'Not yet. ' : '') + type().hint(r, r.hint); r.tone = 'hint';
+    r.msg = (r.hint === 1 ? 'Not yet. ' : '') + type().hint(r, r.hint); r.tone = 'hint'; r.speak = 'msg';
     CM.store.save();
     render();
   }
@@ -55,7 +55,7 @@
     CM.store.state.hints++;
     if (r.hint >= 2) { type().show(r); r.hint = 3; return finish(true, true); }
     r.hint++; r.err = null;
-    r.msg = type().hint(r, r.hint); r.tone = 'hint';
+    r.msg = type().hint(r, r.hint); r.tone = 'hint'; r.speak = 'msg';
     CM.store.save();
     render();
   }
@@ -73,6 +73,7 @@
     else if (helped && !r.stretch) parts.push('A problem like this will come back for practice.');
     r.msg = parts.join(' ');
     r.tone = shown ? 'info' : 'good';
+    r.speak = 'msg';
     focusSel = '[data-act="next"]';
     CM.store.save();
     render();
@@ -105,6 +106,7 @@
           <p class="goal">${esc(m.goal)}</p>
           <div class="chips">${E.chips(m)}</div>
         </div>
+        ${voiceControls(m)}
         <div class="mastery" aria-label="${p.mastered ? 'Mastered' : `${Math.min(p.streak, 3)} of 3 correct in a row`}">
           <div class="dots">${masteryDots(p)}</div>
           <span>${p.mastered ? 'Mastered' : 'In a row'}</span>
@@ -138,7 +140,28 @@
       <p class="muted">Mastery rule: 3 correct in a row without hints, including one at level 3. A problem solved with help comes back for review.</p>
     </details>`;
     root.innerHTML = html;
+    if (r.speak) { const what = r.speak; r.speak = null; if (CM.Speech.active(m)) CM.Speech.say(spoken(what)); }
     if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
+  }
+
+  /* ---------- read-aloud ---------- */
+  const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const MUTED = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  function voiceControls(m) {
+    if (!CM.Speech.offered(m) || !CM.Speech.supported()) return '';
+    const on = CM.Speech.on();
+    return `<div class="voice">
+      ${on ? `<button type="button" class="btn btn-say" data-act="say" aria-label="Hear it again">${SPEAKER}<span>Hear it</span></button>` : ''}
+      <button type="button" class="btn btn-ghost btn-voice" data-act="voice" aria-pressed="${on}" aria-label="Read aloud" title="${on ? 'Turn off reading aloud' : 'Turn on reading aloud'}">${on ? SPEAKER : MUTED}</button>
+    </div>`;
+  }
+  /* What to read: the problem's instructions, the tutor's message, or both. A solved problem adds the explanation. */
+  function spoken(what) {
+    const t = type(), parts = [];
+    if (what === 'prompt' || what === 'all') parts.push(CM.Speech.prompt(t.view(r)));
+    if ((what === 'msg' || what === 'all') && r.msg) parts.push(CM.Speech.plain(r.msg));
+    if (r.solved && what !== 'prompt') parts.push(CM.Speech.plain(t.explain(r)));
+    return parts.filter(Boolean).join(' ');
   }
 
   /* Runs a type's animated check (e.g. the robot walking its program), then checks the result. */
@@ -160,7 +183,8 @@
     if (!res) return false;
     tick();
     if (res.log) { CM.logMistake(r.mission, res.log, type().text(r)); CM.store.save(); }
-    if (res.msg) { r.msg = res.msg; r.tone = res.tone || 'info'; }
+    if (res.msg) { r.msg = res.msg; r.tone = res.tone || 'info'; r.speak = 'msg'; }
+    else if (res.say && CM.Speech.active(r.mission)) CM.Speech.say(res.say);
     if (res.focus) focusSel = res.focus;
     if (res.check) { check(); return true; }
     render();
@@ -172,8 +196,10 @@
     if (suppressClick) { suppressClick = false; return true; }
     const el = ev.target.closest('[data-act]');
     if (!el || el.disabled || !root.contains(el)) return false;
-    if (r.running) return true;
     const act = el.dataset.act;
+    if (act === 'say') { CM.Speech.say(spoken(r.solved ? 'msg' : 'all')); return true; }
+    if (act === 'voice') { CM.Speech.setOn(!CM.Speech.on()); if (CM.Speech.on()) r.speak = r.solved ? 'msg' : 'all'; focusSel = '[data-act="voice"]'; render(); return true; }
+    if (r.running) return true;
     if (act === 'check') { if (type().animate && !r.solved) run(); else check(); return true; }
     if (act === 'hint') { askHint(); return true; }
     if (act === 'next') { tick(); E.start(r.mission.id, root, { stretch: r.stretch }); return true; }

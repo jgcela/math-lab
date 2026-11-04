@@ -48,9 +48,10 @@
     },
     handle(r, act, el) {
       const i = +el.dataset.i;
-      if (act === 'tap') { const k = r.order.indexOf(i); k > -1 ? r.order.splice(k, 1) : r.order.push(i); return { focus: `[data-act="tap"][data-i="${i}"]` }; }
-      if (act === 'pick') { r.answer = +el.dataset.n; return { focus: `[data-act="pick"][data-n="${el.dataset.n}"]` }; }
-      if (act === 'fill') { r.filled.has(i) ? r.filled.delete(i) : r.filled.add(i); return { focus: `[data-act="fill"][data-i="${i}"]` }; }
+      // `say` is read aloud for pre-readers: the count as each object is touched, so the child hears one number per object.
+      if (act === 'tap') { const k = r.order.indexOf(i); k > -1 ? r.order.splice(k, 1) : r.order.push(i); return { focus: `[data-act="tap"][data-i="${i}"]`, say: k > -1 ? '' : String(r.order.length) }; }
+      if (act === 'pick') { r.answer = +el.dataset.n; return { focus: `[data-act="pick"][data-n="${el.dataset.n}"]`, say: el.dataset.n }; }
+      if (act === 'fill') { r.filled.has(i) ? r.filled.delete(i) : r.filled.add(i); return { focus: `[data-act="fill"][data-i="${i}"]`, say: String(r.filled.size) }; }
     },
     check(r) {
       const { n, mode } = r.item;

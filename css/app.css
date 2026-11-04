@@ -133,6 +133,11 @@ details.about p{margin:8px 0;font-size:.9rem}
 body[data-band="k2"] .chips{display:none}
 .std{font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:7px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-variant-numeric:tabular-nums}
 .std.ss{color:var(--muted)}
+.voice{display:flex;gap:8px;align-items:center;flex:0 0 auto;margin-left:auto}
+.voice svg{width:26px;height:26px;flex:0 0 auto}
+.btn-say{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:color-mix(in srgb,var(--accent) 40%,var(--surface));color:var(--ink)}
+.btn-voice{padding:.55em;min-width:var(--tap)}
+.btn-voice[aria-pressed="false"]{color:var(--muted)}
 .mastery{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);font-weight:700;padding-top:6px}
 .dots{display:flex;gap:5px}
 .dot{width:12px;height:12px;border-radius:50%;background:var(--line)}
@@ -316,7 +321,7 @@ body[data-band="35"] .ms,body[data-band="68"] .ms{grid-template-columns:repeat(3
   h1{font-size:1.65rem}.mtitle{font-size:1.5rem}.prompt{font-size:1.25rem}.big{font-size:1.9rem}
   .choice{font-size:1.35rem}.mat{--lab:42px}.arow{gap:4px}.chart td,.chart th{padding:4px 8px}
   .skills li{grid-template-columns:1fr}.smis{grid-column:1}
-  .mhead{flex-direction:column-reverse;gap:6px}.mastery{flex-direction:row;padding-top:0}
+  .mhead{flex-direction:column-reverse;gap:6px}.voice{margin-left:0}.mastery{flex-direction:row;padding-top:0}
   .scale{height:200px}
 }
 

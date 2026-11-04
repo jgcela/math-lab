@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {}, console };
 ctx.global = ctx; ctx.window = ctx;
 vm.createContext(ctx);
-for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
+for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const CM = ctx.CM;
 CM.store.load(null);
@@ -152,6 +152,41 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
   CM.store.removeChild(b.id);
   ok(!CM.store.child(b.id) && CM.store.active() === null, 'delete child clears selection');
   CM.store.load(null);
+})();
+
+/* 6. Read-aloud for pre-readers */
+(() => {
+  const S = CM.Speech, bad = /[<>&]|undefined|NaN|null|\$\{/;
+  ok(S.plain(CM.h.frac(1, 2)) === '1 out of 2', 'read-aloud: fractions read by their label');
+  ok(S.plain('Show <b class="big-inline">3</b> o’clock.') === "Show 3 o'clock.", 'read-aloud: strips tags and curly quotes');
+  ok(S.plain('12 − 3 − 4 = 5') === '12 minus 3 minus 4 equals 5', 'read-aloud: math symbols become words');
+  ok(S.plain('0–10') === '0 to 10', 'read-aloud: number ranges');
+  ok(S.plain('10 + 4 = 14') === '10 plus 4 equals 14', 'read-aloud: plus');
+  ok(S.plain('Tom &amp; Ana&#39;s') === "Tom & Ana's", 'read-aloud: decodes entities');
+  ok(S.prompt('<p class="prompt">How many stars?</p><p class="sub">Touch each one as you count.</p><div>x</div>') === 'How many stars? Touch each one as you count.', 'read-aloud: prompt joins prompt and sub lines');
+  ok(!S.supported(), 'read-aloud: no voice under Node, and nothing throws');
+  const k = CM.MISSIONS.filter(m => S.offered(m));
+  ok(k.length === CM.MISSIONS.filter(m => m.grade === 'K').length && k.length >= 7, 'read-aloud: offered on every Kindergarten mission');
+  ok(!S.offered(CM.mission('g3-arrays')) && !S.offered(CM.mission('g8-balance')), 'read-aloud: not offered above grade 2');
+  k.forEach(m => m.items.forEach((item, i) => {
+    const T = CM.TYPES[m.type];
+    const r = { mission: m, item, tier: item.tier, attempts: 0, hint: 0, solved: false, prog: [] };
+    T.init(r);
+    const p = S.prompt(T.view(r));
+    ok(p.length >= 12 && !bad.test(p), `${m.id}#${i} prompt reads aloud: "${p}"`);
+    [1, 2].forEach(lv => { const h = S.plain(T.hint(r, lv)); ok(h.length > 5 && !bad.test(h), `${m.id}#${i} hint ${lv} reads aloud: "${h}"`); });
+    T.show(r);
+    const e = S.plain(T.explain(r));
+    ok(e.length > 20 && !bad.test(e), `${m.id}#${i} explanation reads aloud: "${e}"`);
+  }));
+  CM.store.load(null);
+  ok(S.on(), 'read-aloud: on by default');
+  S.setOn(false); ok(!S.on(), 'read-aloud: can be turned off');
+  S.setOn(true); ok(S.on(), 'read-aloud: can be turned back on');
+  const tf = { mission: CM.mission('k-count-build'), item: { mode: 'count', n: 4, thing: 'apple' } };
+  CM.TYPES.tenframe.init(tf);
+  ok(CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '2' } }).say === '1' && CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '0' } }).say === '2', 'read-aloud: counting says the next number');
+  ok(CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '0' } }).say === '', 'read-aloud: untapping says nothing');
 })();
 
 console.log(`${pass} passed, ${fail} failed`);
