@@ -108,7 +108,7 @@
 
   function render() {
     if (!r || !root) return;
-    if (r.mission.stage) return renderStage();
+    if (r.mission.stage) return r.mission.stage.layout === 'play' && CM.Kid ? renderPlay() : renderStage();
     const m = r.mission, p = r.prog, t = type();
     const tierLabel = r.stretch ? 'Stretch problem' : `Level ${Math.min(r.tier, CM.rules.topTier)} of ${CM.rules.topTier}`;
     const prereqEvt = r.events.find(e => e.startsWith('prereq:'));
@@ -198,6 +198,61 @@
     if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
   }
 
+  /* ---------- play screen (picture-book layout for young learners) ----------
+   * Missions with `stage: { layout: 'play' }` fill the screen with a scene. A progress bar with the owl
+   * runs along the top, the instruction sits in a white pill with a round speaker, the activity stands
+   * in the field, and the answer cards sit in a tray at the bottom with Hint and DONE. */
+  const BULB = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="currentColor"/><path d="M9.5 18.5h5M10.5 21h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  function renderPlay() {
+    const m = r.mission, p = r.prog, t = type(), K = CM.Kid;
+    const said = [];
+    let field = t.view(r).replace(/<p class="(prompt|sub)"[^>]*>([\s\S]*?)<\/p>/g, (x, k, inner) => { said.push(`<p class="pl-${k}">${inner}</p>`); return ''; });
+    let tiles = '';
+    field = field.replace(/<div class="tiles"[^>]*>[\s\S]*?<\/div>/, x => { tiles = x; return ''; });
+    const mood = r.solved && r.tone === 'good' ? 'happy' : r.tone === 'hint' ? 'think' : 'calm';
+    const isChoice = typeof t.choice === 'function' ? t.choice(r) : t.choice;
+    const speak = CM.Speech.supported() && CM.Speech.offered(m), on = speak && CM.Speech.on();
+    const run3 = CM.rules.masteryRun, got = p.mastered ? run3 : Math.min(p.streak, run3);
+    const level = r.stretch ? 'Stretch' : `Level ${Math.min(r.tier, CM.rules.topTier)}`;
+    const prereqEvt = r.events.find(e => e.startsWith('prereq:'));
+    const cheer = r.solved && r.tone === 'good';
+    let left = '', go = '';
+    if (r.solved) {
+      go = `<button type="button" class="pl-go" data-act="next">${p.mastered && !r.stretch && r.events.includes('mastered') ? 'Keep going' : 'Next'}</button>`;
+      if (p.mastered && m.items.some(i => i.tier === CM.rules.stretchTier)) left = `<button type="button" class="pl-round pl-stretch" data-act="stretch" aria-label="Stretch problem">\u2605</button>`;
+    } else {
+      left = `<button type="button" class="pl-round" data-act="hint" aria-label="${r.hint >= 2 ? 'Show me' : 'Hint'}" title="${r.hint >= 2 ? 'Show me' : 'Hint'}"${r.running ? ' disabled' : ''}>${BULB}</button>`;
+      if (!isChoice) go = `<button type="button" class="pl-go" data-act="check"${r.running ? ' disabled' : ''}>${t.checkLabel || 'Done'}</button>`;
+    }
+    root.innerHTML = `<div class="play theme-${m.stage.theme}">
+        ${CM.Stage.scene(m.stage.theme)}
+        <header class="pl-top">
+          <a class="pl-close" href="#home" aria-label="Close mission">${CLOSE}</a>
+          <div class="pl-bar" role="progressbar" aria-label="${p.mastered ? 'Mission mastered' : 'Correct in a row'}" aria-valuemin="0" aria-valuemax="${run3}" aria-valuenow="${got}" style="--p:${(got / run3).toFixed(3)}">
+            <span class="pl-fill"></span><span class="pl-pin">${K.owl(mood, true)}</span>
+          </div>
+          <span class="pl-level">${level}</span>
+        </header>
+        <div class="pl-say">
+          ${on ? `<button type="button" class="pl-speak" data-act="say" aria-label="Hear it again">${SPEAKER}</button>` : ''}
+          <div class="pl-text">${r.solved ? `<p class="pl-why">${t.explain(r)}</p>` : said.join('')}</div>
+          ${speak ? `<button type="button" class="pl-mute" data-act="voice" aria-pressed="${on}" aria-label="Read aloud" title="${on ? 'Turn off reading aloud' : 'Turn on reading aloud'}">${on ? SPEAKER : MUTED}</button>` : ''}
+        </div>
+        <div class="pl-guide">
+          ${r.msg ? `<div class="pl-bubble ${r.tone === 'good' ? 'good' : r.tone === 'info' ? 'info' : ''}" role="status"><p>${r.msg}</p></div>` : ''}
+          ${prereqEvt ? `<div class="pl-bubble info"><p>This builds on ${prereqEvt.slice(7).split(',').map(id => `<a href="#mission-${id}">${esc(CM.mission(id).title)}</a>`).join(' and ')}. Try that first.</p></div>` : ''}
+          ${K.owl(mood)}
+        </div>
+        <section class="board pl-field" aria-label="${esc(m.title)}"><div class="board-in">${field}</div></section>
+        <div class="pl-tray${tiles ? '' : ' bare'}">${left}${tiles || '<span class="pl-gap"></span>'}${go}</div>
+        ${cheer && !reduced() ? K.confetti() : ''}
+      </div>
+      ${aboutHtml(m)}`;
+    fitBoard();
+    if (r.speak) { const what = r.speak; r.speak = null; if (CM.Speech.active(m)) CM.Speech.say(spoken(what)); }
+    if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
+  }
+
   /* Grow the activity to fill the board, so objects are big on a tablet. Content is laid out at the board's
    * width (at most 640px), then scaled up until it meets the board's edges (at most 2x). A transform keeps
    * taps, drags and the clock dial working, because element positions on screen include it. */
@@ -223,7 +278,7 @@
       if (w < W) break;
     }
     inner.style.width = best.w + 'px';
-    if (best.z > 1.04) {
+    if (best.z > 1.04 || best.z < 0.97) {
       const h = inner.scrollHeight;
       inner.style.transform = `scale(${best.z.toFixed(3)})`;
       inner.style.marginBlock = `${((best.z - 1) * h / 2).toFixed(1)}px`;

@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {}, console };
 ctx.global = ctx; ctx.window = ctx;
 vm.createContext(ctx);
-for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
+for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/kid.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const CM = ctx.CM;
 CM.store.load(null);
@@ -194,6 +194,10 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
 /* 7. Stage missions */
 (() => {
   CM.MISSIONS.filter(m => m.stage).forEach(m => ok(CM.Stage.THEMES.includes(m.stage.theme), `${m.id}: stage theme ${m.stage.theme} exists`));
+  ok(CM.TYPES.tenframe.many('sheep') === 'sheep' && CM.TYPES.tenframe.many('chick') === 'chicks', 'kid look: plural animal names');
+  ok(/How many sheep\?/.test(CM.TYPES.tenframe.view({ mission: CM.mission('k-count-build'), item: { mode: 'count', n: 3, thing: 'sheep' }, order: [], answer: null, solved: false })), 'kid look: count prompt says "How many sheep?"');
+  ok(CM.Kid && CM.Kid.art.sheep && CM.Kid.art.chick && CM.Stage.scene('farm') === CM.Kid.SCENES.farm, 'kid look: farm scene and animals are drawn');
+  ok(CM.mission('k-count-build').items.filter(i => i.mode === 'count').every(i => CM.Kid.art[i.thing]), 'kid look: every counting item has art');
   ok(CM.Stage.mascot('happy').includes('<svg') && CM.Stage.mascot('think').includes('pupil'), 'stage: guide draws every mood');
   CM.mission('g3-arrays').items.forEach(item => {
     const c = CM.TYPES.arrays.choices(item), { a, b } = item;

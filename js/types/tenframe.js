@@ -7,6 +7,9 @@
     apple: '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 12c-4-3-14-3-14 9 0 9 7 15 10 15 2 0 3-1 4-1s2 1 4 1c3 0 10-6 10-15 0-12-10-12-14-9z" fill="var(--t1)"/><path d="M20 12c0-4 2-7 5-8" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 9c3-3 7-3 9-1-3 3-6 3-9 1z" fill="var(--t3)"/></svg>',
     star: '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l4.7 10.6 11.5 1.1-8.7 7.7 2.6 11.3L20 28.8 9.9 34.7l2.6-11.3-8.7-7.7 11.5-1.1z" fill="var(--t2)" stroke="color-mix(in srgb,var(--t2) 70%,var(--ink))" stroke-width="1.5" stroke-linejoin="round"/></svg>'
   };
+  const PLURAL = { sheep: 'sheep', chick: 'chicks' };
+  const many = thing => PLURAL[thing] || thing + 's';
+  const art = thing => (CM.Kid && CM.Kid.art[thing]) || SHAPES[thing] || SHAPES.apple;
   function slots(n, seed) {
     const all = Array.from({ length: 15 }, (_, i) => i);
     let s = seed * 9301 + 49297;
@@ -15,20 +18,21 @@
   }
 
   T.tenframe = {
+    many,
     init(r) { r.order = []; r.answer = null; r.filled = new Set(); },
-    text(r) { return r.item.mode === 'count' ? `Count ${r.item.n} ${r.item.thing}s` : `Build ${r.item.n}`; },
+    text(r) { return r.item.mode === 'count' ? `Count ${r.item.n} ${many(r.item.thing)}` : `Build ${r.item.n}`; },
     view(r) {
       const { n, mode, thing } = r.item;
       if (mode === 'count') {
-        const pos = slots(n, n + (thing === 'star' ? 7 : 0));
+        const pos = slots(n, n + (thing === 'star' || thing === 'chick' ? 7 : 0));
         const objs = pos.map((p, i) => {
           const k = r.order.indexOf(i);
-          return `<button type="button" class="obj${k > -1 ? ' counted' : ''}" data-act="tap" data-i="${i}" style="grid-column:${p.col + 1};grid-row:${p.row + 1};translate:${p.dx}% ${p.dy}%" aria-label="${thing} ${i + 1}${k > -1 ? ', counted as ' + (k + 1) : ''}"${r.solved ? ' disabled' : ''}>${SHAPES[thing]}${k > -1 ? `<b>${k + 1}</b>` : ''}</button>`;
+          return `<button type="button" class="obj${k > -1 ? ' counted' : ''}" data-act="tap" data-i="${i}" style="grid-column:${p.col + 1};grid-row:${p.row + 1};translate:${p.dx}% ${p.dy}%" aria-label="${thing} ${i + 1}${k > -1 ? ', counted as ' + (k + 1) : ''}"${r.solved ? ' disabled' : ''}>${art(thing)}${k > -1 ? `<b>${k + 1}</b>` : ''}</button>`;
         }).join('');
         // On the full-screen stage, four big answer cards instead of eleven small ones. The right one moves around.
         const first = r.mission && r.mission.stage ? Math.max(0, n - 1 - (n % 3)) : 0;
         const tiles = Array.from({ length: r.mission && r.mission.stage ? 4 : 11 }, (_, k) => first + k).map(i => `<button type="button" class="tile${r.answer === i ? ' picked' : ''}" data-act="pick" data-n="${i}"${r.solved ? ' disabled' : ''}>${i}</button>`).join('');
-        return `<p class="prompt">How many ${thing}s?</p>
+        return `<p class="prompt">How many ${many(thing)}?</p>
           <p class="sub">Touch each one as you count.</p>
           <div class="scatter">${objs}</div>
           <div class="tiles" role="group" aria-label="How many">${tiles}</div>`;
@@ -70,7 +74,7 @@
       const { n, mode, thing } = r.item;
       if (mode === 'count') {
         if (lv >= 2) { r.order = Array.from({ length: n }, (_, i) => i); return `Every ${thing} has a number now. The last number tells how many.`; }
-        return r.err === 'skipped' ? `Some ${thing}s don't have a number yet. Touch each one once.` : `Touch each ${thing} one time. Say the number as you touch it.`;
+        return r.err === 'skipped' ? `Some ${many(thing)} don't have a number yet. Touch each one once.` : `Touch each ${thing} one time. Say the number as you touch it.`;
       }
       if (lv >= 2) return n > 10 ? `Fill the outlined boxes. One full frame is 10. Then ${n - 10 * Math.floor(n / 10)} more.` : 'Fill the outlined boxes.';
       if (r.err === 'more') return `You have ${r.filled.size}. That's too many. Take some away.`;
