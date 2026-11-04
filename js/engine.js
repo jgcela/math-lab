@@ -174,7 +174,7 @@
     root.innerHTML = `<div class="stage theme-${m.stage.theme}">
         ${S.scene(m.stage.theme)}
         <div class="st-side" aria-hidden="true"></div>
-        <section class="board" aria-label="${esc(m.title)}">${board}
+        <section class="board" aria-label="${esc(m.title)}"><div class="board-in">${board}</div>
           ${r.solved ? `<div class="st-explain"><p class="eyebrow">Why it works</p><p>${t.explain(r)}</p></div>` : ''}
         </section>
         <aside class="st-panel">
@@ -193,9 +193,43 @@
         <div class="st-actions"><span class="st-level">${level}</span>${act}</div>
       </div>
       ${aboutHtml(m)}`;
+    fitBoard();
     if (r.speak) { const what = r.speak; r.speak = null; if (CM.Speech.active(m)) CM.Speech.say(spoken(what)); }
     if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
   }
+
+  /* Grow the activity to fill the board, so objects are big on a tablet. Content is laid out at the board's
+   * width (at most 640px), then scaled up until it meets the board's edges (at most 2x). A transform keeps
+   * taps, drags and the clock dial working, because element positions on screen include it. */
+  const FIT_MAX = 2, FIT_WIDTHS = [640, 580, 520, 460];
+  function fitBoard() {
+    if (!root) return;
+    const board = root.querySelector('.board'), inner = board && board.querySelector('.board-in');
+    if (!inner || typeof getComputedStyle !== 'function') return;
+    inner.style.transform = ''; inner.style.marginBlock = '';
+    const cs = getComputedStyle(board), padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight), padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const availW = board.clientWidth - padX, gap = parseFloat(cs.rowGap) || 0;
+    inner.style.width = Math.min(FIT_WIDTHS[0], availW) + 'px';
+    const rest = [...board.children].filter(c => c !== inner).reduce((h, c) => h + c.offsetHeight + gap, 0);
+    const availH = board.clientHeight - padY - rest;
+    // Try a few layout widths; keep the one that lets the activity grow the most.
+    let best = { z: 0, w: Math.min(FIT_WIDTHS[0], availW) };
+    for (const W of FIT_WIDTHS) {
+      const w = Math.min(W, availW);
+      inner.style.width = w + 'px';
+      const h = Math.max(inner.scrollHeight, 1), cw = Math.max(inner.scrollWidth, w);
+      const z = Math.min(FIT_MAX, availW / cw, availH / h);
+      if (z > best.z + 0.02) best = { z, w, h };
+      if (w < W) break;
+    }
+    inner.style.width = best.w + 'px';
+    if (best.z > 1.04) {
+      const h = inner.scrollHeight;
+      inner.style.transform = `scale(${best.z.toFixed(3)})`;
+      inner.style.marginBlock = `${((best.z - 1) * h / 2).toFixed(1)}px`;
+    }
+  }
+  if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('resize', () => { if (r && r.mission.stage) fitBoard(); });
 
   /* ---------- read-aloud ---------- */
   const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';

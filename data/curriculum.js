@@ -55,7 +55,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-pattern-train', grade: 'K', type: 'pattern', art: true,
+    id: 'k-pattern-train', grade: 'K', type: 'pattern', stage: { theme: 'meadow' }, art: true,
     title: 'Pattern Train',
     goal: 'Find the part that repeats and finish the train.',
     standards: ['K.V.2'], scope: ['SS-V-109'],
@@ -69,7 +69,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-shape-hunt', grade: 'K', type: 'shapes', art: true,
+    id: 'k-shape-hunt', grade: 'K', type: 'shapes', stage: { theme: 'sunset' }, art: true,
     title: 'Shape Hunt',
     goal: 'Find every shape of one kind hiding in a picture.',
     standards: ['K.III.1'], scope: ['SS-III-82'],
@@ -84,7 +84,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-number-hop', grade: 'K', type: 'numberHop', art: true,
+    id: 'k-number-hop', grade: 'K', type: 'numberHop', stage: { theme: 'meadow' }, art: true,
     title: 'Hop to the Number',
     goal: 'Move the rabbit to the right place on a number line.',
     standards: ['K.I.A.6'], scope: ['SS-I-4'],
@@ -98,7 +98,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-which-more', grade: 'K', type: 'compareGroups', art: true,
+    id: 'k-which-more', grade: 'K', type: 'compareGroups', stage: { theme: 'sea' }, art: true,
     title: 'Which Has More?',
     goal: 'Compare two groups by matching them one to one.',
     standards: ['K.I.A.10'], scope: ['SS-I-8'],
@@ -113,7 +113,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-clock', grade: 'K', type: 'clock', art: true,
+    id: 'k-clock', grade: 'K', type: 'clock', stage: { theme: 'sunset' }, art: true,
     title: 'What Time Is It?',
     goal: 'Read and show each hour on a clock.',
     standards: ['K.II.B.4'], scope: ['SS-II-73'],
@@ -127,7 +127,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'k-robot-path', grade: 'K', type: 'robot', art: true,
+    id: 'k-robot-path', grade: 'K', type: 'robot', stage: { theme: 'space' }, art: true,
     title: 'Robot Path',
     goal: 'Plan steps with up, down, left, and right to reach the flower.',
     standards: ['K.III.2'], scope: [],
@@ -142,7 +142,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-fraction-build', grade: '3', type: 'fractionBuild',
+    id: 'g3-fraction-build', grade: '3', type: 'fractionBuild', stage: { theme: 'sea' },
     title: 'Build a Fraction',
     goal: 'Cut a whole into equal pieces and color the right number of them.',
     standards: ['3.I.E.2'], scope: ['SS-I-51'],
@@ -155,7 +155,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-fraction-compare', grade: '3', type: 'fractionCompare',
+    id: 'g3-fraction-compare', grade: '3', type: 'fractionCompare', stage: { theme: 'sunset' },
     title: 'Which Is More?',
     goal: 'Compare two fractions using same-size fraction bars.',
     standards: ['3.I.E.3'], scope: ['SS-I-54'],
@@ -169,7 +169,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-fraction-equiv', grade: '3', type: 'fractionEquiv',
+    id: 'g3-fraction-equiv', grade: '3', type: 'fractionEquiv', stage: { theme: 'snow' },
     title: 'Same Amount, New Pieces',
     goal: 'Find an equivalent fraction by matching the amount on a fraction bar.',
     standards: ['3.I.E.1'], scope: ['SS-I-52'],
@@ -193,7 +193,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-add-regroup', grade: '3', type: 'addRegroup',
+    id: 'g3-add-regroup', grade: '3', type: 'addRegroup', stage: { theme: 'space' },
     title: 'Add with Trades',
     goal: 'Add multi-digit numbers, trading 10 ones for a ten when needed.',
     standards: ['3.I.B.1', '3.I.B.2'], scope: ['SS-I-24', 'SS-I-27'],
@@ -205,7 +205,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-sub-regroup', grade: '3', type: 'subRegroup',
+    id: 'g3-sub-regroup', grade: '3', type: 'subRegroup', stage: { theme: 'snow' },
     title: 'Subtract with Trades',
     goal: 'Subtract multi-digit numbers, breaking a ten or hundred when a place runs short, including across zeros.',
     standards: ['3.I.B.1', '3.I.B.2'], scope: ['SS-I-24', 'SS-I-27'],
@@ -218,7 +218,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g5-garden', grade: '5', type: 'garden',
+    id: 'g5-garden', grade: '5', type: 'garden', stage: { theme: 'meadow' },
     title: 'The Garden Challenge',
     goal: 'Find what fraction of a community garden is still available.',
     standards: ['5.I.E.3'], scope: ['SS-I-58'],
@@ -236,7 +236,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g8-balance', grade: '8', type: 'balance',
+    id: 'g8-balance', grade: '8', type: 'balance', stage: { theme: 'space' },
     title: 'Balance the Equation',
     goal: 'Solve linear equations by doing the same thing to both sides of a balance.',
     standards: ['ALG1.III.1', 'ALG1.III.2'], scope: ['SS-V-114'],
