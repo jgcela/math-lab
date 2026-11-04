@@ -26,6 +26,33 @@
       <g transform="translate(110 455)"><rect x="-9" y="-80" width="18" height="90" fill="#7a5234"/><circle cx="0" cy="-110" r="62" fill="#4f9e4c"/><circle cx="-38" cy="-80" r="38" fill="#4f9e4c"/><circle cx="40" cy="-82" r="36" fill="#4f9e4c"/>
         <g fill="#e1552c"><circle cx="-24" cy="-118" r="8"/><circle cx="22" cy="-130" r="8"/><circle cx="34" cy="-88" r="8"/><circle cx="-44" cy="-80" r="8"/><circle cx="2" cy="-90" r="8"/></g></g>
       <g fill="#ffffff">${[[300, 520], [700, 540], [860, 515]].map(([x, y]) => `<g transform="translate(${x} ${y})"><circle r="5" cx="-6"/><circle r="5" cx="6"/><circle r="5" cy="-6"/><circle r="5" cy="6"/><circle r="4" fill="#ffc861"/></g>`).join('')}</g>
+    </svg>`,
+    space: `<svg class="st-scene" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><linearGradient id="sky-space" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2470"/><stop offset="1" stop-color="#3a3f9e"/></linearGradient></defs>
+      <rect width="1000" height="600" fill="url(#sky-space)"/>
+      <g fill="#ffffff">${Array.from({ length: 46 }, (_, i) => `<circle cx="${(i * 211) % 1000}" cy="${(i * 97) % 520}" r="${1 + (i % 3) * .8}" opacity="${.5 + (i % 4) * .15}"/>`).join('')}</g>
+      <circle cx="860" cy="120" r="70" fill="#f2b25c"/><ellipse cx="860" cy="120" rx="118" ry="22" fill="none" stroke="#ffd79a" stroke-width="8" transform="rotate(-18 860 120)"/>
+      <circle cx="140" cy="160" r="26" fill="#8fd3ff"/><circle cx="132" cy="152" r="6" fill="#6bb9ea"/>
+      <path d="M0 540 Q250 470 520 530 T1000 520 L1000 600 L0 600Z" fill="#4c4fb0"/>
+      <g fill="#3c3f9a"><circle cx="220" cy="560" r="16"/><circle cx="700" cy="565" r="22"/><circle cx="880" cy="555" r="12"/></g>
+    </svg>`,
+    sea: `<svg class="st-scene" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><linearGradient id="sky-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfeaf0"/><stop offset=".55" stop-color="#e8f8f6"/><stop offset=".56" stop-color="#4fb3c2"/><stop offset="1" stop-color="#2a8ea3"/></linearGradient></defs>
+      <rect width="1000" height="600" fill="url(#sky-sea)"/>
+      <circle cx="150" cy="110" r="50" fill="#ffd36b"/>
+      <g fill="#ffffff" opacity=".9"><ellipse cx="700" cy="90" rx="70" ry="20"/><ellipse cx="740" cy="76" rx="40" ry="18"/></g>
+      <g transform="translate(820 300)"><path d="M-70 30 L70 30 L50 56 L-50 56Z" fill="#c4473a"/><rect x="-3" y="-80" width="6" height="110" fill="#6b4a33"/><path d="M4 -76 L60 20 L4 20Z" fill="#ffffff"/><path d="M-4 -60 L-46 20 L-4 20Z" fill="#ffe6a8"/></g>
+      <g fill="none" stroke="#ffffff" stroke-width="4" opacity=".6" stroke-linecap="round">${[[80, 380], [320, 430], [560, 400], [260, 520], [640, 500], [880, 450]].map(([x, y]) => `<path d="M${x} ${y} q15 -10 30 0 t30 0"/>`).join('')}</g>
+      <path d="M0 560 Q200 530 420 565 T1000 550 L1000 600 L0 600Z" fill="#f3dca6"/>
+    </svg>`,
+    sunset: `<svg class="st-scene" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><linearGradient id="sky-sunset" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcfa8"/><stop offset=".6" stop-color="#ffe9c7"/><stop offset="1" stop-color="#fff3df"/></linearGradient></defs>
+      <rect width="1000" height="600" fill="url(#sky-sunset)"/>
+      <circle cx="500" cy="420" r="120" fill="#ffb36b" opacity=".8"/>
+      <path d="M0 440 L120 380 L220 420 L330 360 L460 430 L600 370 L720 420 L860 360 L1000 410 L1000 600 L0 600Z" fill="#e7a07d"/>
+      <path d="M0 500 Q260 450 520 500 T1000 490 L1000 600 L0 600Z" fill="#c9806a"/>
+      <g transform="translate(860 470)" fill="#9b5f50"><rect x="-30" y="-60" width="60" height="60"/><path d="M-38 -60 L0 -96 L38 -60Z"/><rect x="-4" y="-130" width="8" height="40"/><rect x="-14" y="-118" width="28" height="7"/><rect x="-8" y="-30" width="16" height="30" fill="#7a4639"/></g>
+      <path d="M0 550 Q300 520 640 555 T1000 545 L1000 600 L0 600Z" fill="#a8665a"/>
     </svg>`
   };
   S.THEMES = Object.keys(SCENES);

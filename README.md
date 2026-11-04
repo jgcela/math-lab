@@ -88,6 +88,6 @@ Not tested on a real iPad yet: the tests use a stand-in voice.
 
 Missions with `stage: { theme }` in `data/curriculum.js` open full screen: a themed scene, a white board with the activity, and a side panel with the instruction, the speaker, an owl guide whose face reacts (calm, thinking, happy), the tutor's words, and a big DONE button. On phones and portrait tablets the panel moves above the board.
 
-Two missions use it so far, as samples: **Count and Build** (K, meadow) and **Array Builder** (grade 3, snow). Array Builder was rebuilt for it: the child sweeps a finger across a 10 × 10 field of snowballs to frame the rows and columns, then picks the total from three cards. One card is always a + b, so adding instead of multiplying is still caught. Arrow keys move the frame for keyboard users.
+All 15 missions use it, with five themes: meadow, snow, space, sea, and sunset. Grades 6–8 get the same stage without the owl. The activity is laid out at up to 640px wide and then scaled to fill the board (up to 2×), so objects are large on a tablet. Array Builder was rebuilt for it: the child sweeps a finger across a 10 × 10 field of snowballs to frame the rows and columns, then picks the total from three cards. One card is always a + b, so adding instead of multiplying is still caught. Arrow keys move the frame for keyboard users.
 
 All art is drawn in code as flat shapes. It is original and simple; it does not match hand-made illustration.

@@ -474,11 +474,21 @@ body.immersive .view{max-width:none;padding:0;gap:0}
   padding:max(20px,env(safe-area-inset-top,0px)) 0 max(20px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
 .stage.theme-snow{--panel:#156b89;--done-ink:#156b89}
 .stage.theme-meadow{--panel:#c0453a;--done-ink:#b03e33}
+.stage.theme-space{--panel:#4b3fa8;--done-ink:#4b3fa8}
+.stage.theme-sea{--panel:#0e6a78;--done-ink:#0e6a78}
+.stage.theme-sunset{--panel:#a3472c;--done-ink:#a3472c}
+/* Grades 6-8: same stage, no owl. */
+body[data-band="68"] .stage .mascot{display:none}
 .st-scene{position:absolute;inset:0;width:100%;height:100%;z-index:-2}
 .st-side{grid-area:1/2/3/3;margin:-20px 0 -20px 20px;margin-top:calc(-1 * max(20px,env(safe-area-inset-top,0px)));margin-bottom:calc(-1 * max(20px,env(safe-area-inset-bottom,0px)));background:var(--panel);z-index:-1;
   border-radius:36px 0 0 36px;box-shadow:-8px 0 30px rgba(0,0,0,.08)}
 .board{grid-area:board;background:var(--surface);border-radius:32px;box-shadow:0 18px 50px rgba(20,40,60,.18);padding:clamp(18px,3vw,36px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-width:0;overflow:auto}
+.board-in{display:flex;flex-direction:column;align-items:stretch;gap:16px;max-width:100%;transform-origin:center center;flex:none}
+.board-in>*{max-width:100%}
+.board-in>.agrid,.board-in>.eqn,.board-in>.ag-cap,.board-in>.big,.board-in>.eq,.board-in>.clockwrap,.board-in>.legend{align-self:center}
+.stage .choices,.stage .steppers,.stage .eq,.stage .arrows,.stage .tray{justify-content:center}
+.stage .big{text-align:center}
 .st-panel{grid-area:panel;color:var(--panel-ink);padding:6px max(20px,env(safe-area-inset-right,0px)) 0 44px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .st-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .st-meta{margin:0;display:flex;flex-direction:column;gap:6px;font:600 .82rem/1.2 var(--display);letter-spacing:.04em;text-transform:uppercase}
@@ -556,3 +566,8 @@ body.immersive .view{max-width:none;padding:0;gap:0}
   .stage .tile{min-width:72px;height:72px;font-size:2rem}
   .agrid{--s:clamp(22px,min(calc((100vw - 120px) / 10.5),calc((100vh - 470px) / 10)),46px);padding:8px 4px}
 }
+/* stage tweaks for the original missions */
+.stage .train{flex-wrap:nowrap;justify-content:center}
+.stage .grid2{grid-template-columns:repeat(var(--w),minmax(0,96px));justify-content:center;margin-inline:auto}
+.stage .find{justify-content:center}
+.stage .blocks,.stage .legend{justify-content:center}
