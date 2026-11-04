@@ -49,17 +49,6 @@
 
   /* ---------- shared bits ---------- */
   const statusLabel = { mastered: 'Mastered', practicing: 'Practicing', ready: 'Ready', locked: 'Suggested later' };
-  function missionCard(id, why) {
-    const m = CM.mission(id), st = CM.status(id), p = CM.store.peek(id);
-    const th = CM.TYPES[m.type] && CM.TYPES[m.type].thumb;
-    return `<a class="mcard" href="#mission-${id}">
-      ${th ? `<span class="mc-art">${th}</span>` : ''}
-      <span class="mc-top"><span class="pill ${st}">${statusLabel[st]}</span>${why ? `<span class="why">${esc(why)}</span>` : ''}</span>
-      <span class="mc-title">${esc(m.title)}</span>
-      <span class="mc-goal">${esc(m.goal)}</span>
-      <span class="mc-foot"><span>${CM.grade(m.grade).label}</span><span>${m.standards.join(' \u00b7 ')}</span>${p && p.done ? `<span>${plural(p.done, 'problem')}</span>` : ''}</span>
-    </a>`;
-  }
   function gradeStats(g) {
     const skills = CM.gradeSkills(g);
     const withM = skills.filter(s => s.missions.length);
@@ -84,43 +73,62 @@
   }
 
   /* ---------- views ---------- */
+  /* Home: a sunny hero with the owl and the rosette of mastered missions, big mission cards
+   * that carry each mission's scene, and three chunky doors to the path, the lab, and challenges. */
+  const DOORS = {
+    path: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 54 C 22 46, 8 34, 26 30 S 44 18, 50 10" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 10"/><path d="M48 6 v20" stroke="#5b4038" stroke-width="3" stroke-linecap="round"/><path d="M48 7 l12 5 l-12 5z" fill="#ff6b6b"/><circle cx="12" cy="54" r="6" fill="#ffd43b"/></svg>',
+    lab: '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="10" width="52" height="12" rx="4" fill="#fff"/><rect x="6" y="26" width="25" height="12" rx="4" fill="#ffd43b"/><rect x="33" y="26" width="25" height="12" rx="4" fill="#ffd43b"/><rect x="6" y="42" width="16" height="12" rx="4" fill="#ff8787"/><rect x="24" y="42" width="16" height="12" rx="4" fill="#ff8787"/><rect x="42" y="42" width="16" height="12" rx="4" fill="#ff8787"/></svg>',
+    think: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l7.5 15.5 17 2.4-12.3 12 2.9 17L32 45l-15.1 7.9 2.9-17-12.3-12 17-2.4z" fill="#ffd43b" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><circle cx="26" cy="30" r="2.6" fill="#2b2230"/><circle cx="38" cy="30" r="2.6" fill="#2b2230"/><path d="M27 36 q5 4 10 0" fill="none" stroke="#2b2230" stroke-width="2.4" stroke-linecap="round"/></svg>'
+  };
+  const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.8l-10-6.5A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg>';
+  function kidCard(id, why) {
+    const m = CM.mission(id), st = CM.status(id), p = CM.store.peek(id) || { streak: 0 };
+    const theme = (m.stage && m.stage.theme) || 'meadow';
+    const th = CM.TYPES[m.type] && CM.TYPES[m.type].thumb;
+    const got = p.mastered ? CM.rules.masteryRun : Math.min(p.streak || 0, CM.rules.masteryRun);
+    const look = m.id === 'k-count-build' && CM.Kid ? CM.Kid.art.sheep : th;
+    return `<a class="kc kc-${theme}" href="#mission-${id}">
+      <span class="kc-art">${CM.Stage.scene(theme)}${look ? `<span class="kc-pic${m.id === 'k-count-build' ? ' char' : ''}">${look}</span>` : ''}${why ? `<span class="kc-why">${esc(why)}</span>` : ''}</span>
+      <span class="kc-body">
+        <span class="kc-title">${esc(m.title)}</span>
+        <span class="kc-goal">${esc(m.goal)}</span>
+        <span class="kc-foot"><span class="kc-stars" aria-label="${p.mastered ? 'Mastered' : `${got} of ${CM.rules.masteryRun} in a row`}">${Array.from({ length: CM.rules.masteryRun }, (_, i) => `<i class="${i < got ? 'on' : ''}"></i>`).join('')}</span><span class="pill ${st}">${statusLabel[st]}</span><span class="kc-go" aria-hidden="true">${PLAY}</span></span>
+      </span>
+    </a>`;
+  }
   function home() {
-    const st = S(), g = st.profile.grade, G = CM.grade(g), stats = gradeStats(g);
+    const st = S(), g = st.profile.grade, G = CM.grade(g), stats = gradeStats(g), K = CM.Kid;
+    const last = st.lastMission && CM.mission(st.lastMission);
     const rec = CM.recommend(g, 4).filter(x => x.id !== st.lastMission).slice(0, 3);
+    const cards = (last ? [{ id: last.id, why: 'Last time' }] : []).concat(rec).slice(0, 4);
     const hour = new Date().getHours();
     const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    const last = st.lastMission && CM.mission(st.lastMission);
     const gm = CM.MISSIONS.filter(m => m.grade === g);
     const nearest = gm.length ? null : CM.GRADES.map(x => x.id).filter(x => CM.MISSIONS.some(m => m.grade === x)).sort((a, b) => Math.abs(CM.GRADES.findIndex(x => x.id === a) - CM.GRADES.findIndex(x => x.id === g)) - Math.abs(CM.GRADES.findIndex(x => x.id === b) - CM.GRADES.findIndex(x => x.id === g)))[0];
-    const domains = CM.path(g);
-    const masteredMissions = CM.MISSIONS.filter(m => (CM.store.peek(m.id) || {}).mastered);
-    return `<section class="hello">
-        <div>
-          <p class="eyebrow">${G.label}${G.proposed ? ' \u00b7 proposed pathway' : ''}</p>
-          <h1>${greet}${st.profile.name ? ', ' + esc(st.profile.name) : ''}.</h1>
-          <p class="level">${stats.mastered} of ${stats.withMissions} skills with missions mastered \u00b7 ${stats.total} skills in ${G.label}</p>
+    const done = gm.filter(m => (CM.store.peek(m.id) || {}).mastered).length;
+    const top = cards[0] && CM.mission(cards[0].id);
+    return `<section class="kh-hero">
+        <div class="kh-hi">
+          <p class="kh-grade">${G.label}${G.proposed ? ' \u00b7 proposed pathway' : ''}</p>
+          <h1>${greet}${st.profile.name ? `, <span>${esc(st.profile.name)}</span>` : ''}!</h1>
+          <p class="kh-lead">${top ? 'Ready for today\u2019s math adventure?' : gm.length ? 'Every mission here is mastered. Try a challenge!' : `Missions for ${G.label} are on the way.`}</p>
+          ${top ? `<a class="kh-play" href="#mission-${top.id}"><span class="kh-play-i">${PLAY}</span><span>Play <b>${esc(top.title)}</b></span></a>` : ''}
         </div>
+        <div class="kh-friends" aria-hidden="true">${K ? `<span class="kh-owl">${K.owl('happy')}</span><span class="kh-sheep">${K.art.sheep}</span><span class="kh-chick">${K.art.chick}</span>` : ''}</div>
+        <div class="kh-rose">${K ? K.rosette(done, gm.length) : ''}<p><b>${done} of ${gm.length}</b> ${gm.length === 1 ? 'mission' : 'missions'} mastered</p><p class="kh-skills">${stats.mastered} of ${stats.withMissions} skills \u00b7 ${stats.total} in ${G.label}</p></div>
       </section>
-      <section aria-labelledby="h-today">
-        <h2 id="h-today">Today's Math Missions</h2>
-        ${rec.length ? `<div class="mgrid">${rec.map(x => missionCard(x.id, x.why)).join('')}</div>`
-        : `<p class="empty">${gm.length ? (last && last.grade === g && !(CM.store.peek(last.id) || {}).mastered ? 'Pick up where you left off, just below.' : 'Every mission for this grade is mastered. Try the stretch problems or a challenge.') : `There are no missions for ${G.label} yet. The learning path lists every ${G.label} skill.${nearest ? ` Missions are ready in <a href="#path-${nearest}">${CM.grade(nearest).label}</a>.` : ''}`}</p>`}
+      <section class="kh-sec" aria-labelledby="h-today">
+        <h2 id="h-today">Today's missions</h2>
+        ${cards.length ? `<div class="kh-cards">${cards.map(x => kidCard(x.id, x.why)).join('')}</div>`
+        : `<p class="kh-empty">${gm.length ? 'Every mission for this grade is mastered. Try the stretch problems or a challenge.' : `There are no missions for ${G.label} yet. The learning path lists every ${G.label} skill.${nearest ? ` Missions are ready in <a href="#path-${nearest}">${CM.grade(nearest).label}</a>.` : ''}`}</p>`}
       </section>
-      ${last ? `<section aria-labelledby="h-cont"><h2 id="h-cont">Continue Learning</h2><div class="mgrid single">${missionCard(last.id, 'Last time')}</div></section>` : ''}
-      <section class="split">
-        <div class="panel">
-          <h2>Learning Path</h2>
-          <ul class="dlist">${domains.map(d => { const sk = d.units.flatMap(u => u.skills), wm = sk.filter(s => s.missions.length).length; return `<li><span>${d.code === 'ALG1' ? 'Algebra I, Section 1 (proposed)' : `${d.code}. ${esc(d.name)}`}</span><small>${wm ? `${wm} of ${sk.length} skills have missions` : `${sk.length} skills`}</small></li>`; }).join('')}</ul>
-          <a class="btn btn-ghost" href="#path-${g}">Open the ${G.label} path</a>
+      <section class="kh-sec" aria-labelledby="h-explore">
+        <h2 id="h-explore">Explore</h2>
+        <div class="kh-doors">
+          <a class="kd kd-path" href="#path-${g}"><span class="kd-i">${DOORS.path}</span><span class="kd-t">Learning Path</span><span class="kd-s">Every ${esc(G.label)} skill, step by step</span></a>
+          <a class="kd kd-lab" href="#lab"><span class="kd-i">${DOORS.lab}</span><span class="kd-t">Math Lab</span><span class="kd-s">Fraction bars, blocks, a number line, a balance</span></a>
+          <a class="kd kd-think" href="#challenges"><span class="kd-i">${DOORS.think}</span><span class="kd-t">Challenges</span><span class="kd-s">Puzzles with more than one way in</span></a>
         </div>
-        <div class="panel">
-          <h2>Progress</h2>
-          ${masteredMissions.length ? `<ul class="dlist">${masteredMissions.map(m => `<li><span>${esc(m.title)}</span><small>${m.standards.join(', ')}</small></li>`).join('')}</ul>` : '<p class="muted">Missions you master will show here, with the standards they cover.</p>'}
-        </div>
-      </section>
-      <section class="split">
-        <a class="tilecard" href="#lab"><span class="eyebrow">Explore</span><span class="tc-title">Math Lab</span><span class="muted">Fraction bars, base-ten blocks, a number line, and a balance to try ideas freely.</span></a>
-        <a class="tilecard" href="#challenges"><span class="eyebrow">Think</span><span class="tc-title">Challenges</span><span class="muted">Puzzles with more than one way in.</span></a>
       </section>`;
   }
 
@@ -241,6 +249,7 @@
     header();
     const g = route.name === 'mission' && CM.mission(route.id) ? CM.mission(route.id).grade : route.name === 'path' ? route.grade : S().profile.grade;
     document.body.dataset.band = band(g);
+    document.body.dataset.route = route.name;
     document.body.classList.toggle('immersive', route.name === 'mission' && !!(CM.mission(route.id) || {}).stage);
     view.className = 'view v-' + route.name;
     if (route.name === 'home') view.innerHTML = home();

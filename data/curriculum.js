@@ -40,16 +40,16 @@ CM.GRADE8 = {
 
 CM.MISSIONS = [
   {
-    id: 'k-count-build', grade: 'K', type: 'tenframe', stage: { theme: 'meadow' },
+    id: 'k-count-build', grade: 'K', type: 'tenframe', stage: { theme: 'farm', layout: 'play' },
     title: 'Count and Build',
     goal: 'Touch and count objects, then build a group of a given size.',
     standards: ['K.I.A.4', 'K.I.A.9'], scope: ['SS-I-2', 'SS-I-7'],
     disposition: 'Develop the mental habits of precise, determined, careful, and accurate questioning, inquiry, and reasoning.',
     prereqs: [],
     items: [
-      { tier: 1, mode: 'count', n: 4, thing: 'apple' }, { tier: 1, mode: 'count', n: 6, thing: 'star' },
+      { tier: 1, mode: 'count', n: 4, thing: 'sheep' }, { tier: 1, mode: 'count', n: 6, thing: 'chick' },
       { tier: 1, mode: 'build', n: 5 },
-      { tier: 2, mode: 'count', n: 8, thing: 'apple' }, { tier: 2, mode: 'build', n: 9 }, { tier: 2, mode: 'count', n: 10, thing: 'star' },
+      { tier: 2, mode: 'count', n: 8, thing: 'sheep' }, { tier: 2, mode: 'build', n: 9 }, { tier: 2, mode: 'count', n: 10, thing: 'chick' },
       { tier: 3, mode: 'build', n: 14 }, { tier: 3, mode: 'build', n: 17 }, { tier: 3, mode: 'build', n: 12 },
       { tier: 4, mode: 'build', n: 26 }, { tier: 4, mode: 'build', n: 30 }
     ]
