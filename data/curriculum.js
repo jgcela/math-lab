@@ -40,7 +40,7 @@ CM.GRADE8 = {
 
 CM.MISSIONS = [
   {
-    id: 'k-count-build', grade: 'K', type: 'tenframe',
+    id: 'k-count-build', grade: 'K', type: 'tenframe', stage: { theme: 'meadow' },
     title: 'Count and Build',
     goal: 'Touch and count objects, then build a group of a given size.',
     standards: ['K.I.A.4', 'K.I.A.9'], scope: ['SS-I-2', 'SS-I-7'],
@@ -181,7 +181,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g3-arrays', grade: '3', type: 'arrays',
+    id: 'g3-arrays', grade: '3', type: 'arrays', stage: { theme: 'snow' },
     title: 'Array Builder',
     goal: 'Show multiplication as equal rows, then find the total.',
     standards: ['3.I.C.1', '3.I.C.2'], scope: ['SS-I-32', 'SS-I-33'],

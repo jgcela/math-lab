@@ -25,7 +25,9 @@
           const k = r.order.indexOf(i);
           return `<button type="button" class="obj${k > -1 ? ' counted' : ''}" data-act="tap" data-i="${i}" style="grid-column:${p.col + 1};grid-row:${p.row + 1};translate:${p.dx}% ${p.dy}%" aria-label="${thing} ${i + 1}${k > -1 ? ', counted as ' + (k + 1) : ''}"${r.solved ? ' disabled' : ''}>${SHAPES[thing]}${k > -1 ? `<b>${k + 1}</b>` : ''}</button>`;
         }).join('');
-        const tiles = Array.from({ length: 11 }, (_, i) => `<button type="button" class="tile${r.answer === i ? ' picked' : ''}" data-act="pick" data-n="${i}"${r.solved ? ' disabled' : ''}>${i}</button>`).join('');
+        // On the full-screen stage, four big answer cards instead of eleven small ones. The right one moves around.
+        const first = r.mission && r.mission.stage ? Math.max(0, n - 1 - (n % 3)) : 0;
+        const tiles = Array.from({ length: r.mission && r.mission.stage ? 4 : 11 }, (_, k) => first + k).map(i => `<button type="button" class="tile${r.answer === i ? ' picked' : ''}" data-act="pick" data-n="${i}"${r.solved ? ' disabled' : ''}>${i}</button>`).join('');
         return `<p class="prompt">How many ${thing}s?</p>
           <p class="sub">Touch each one as you count.</p>
           <div class="scatter">${objs}</div>

@@ -94,8 +94,21 @@
     }).join('');
   };
 
+  function aboutHtml(m) {
+    return `<details class="about"><summary>About this mission</summary>
+      ${m.standards.map(id => { const o = CM.objective(id); return o ? `<p><b>${id}</b> \u00b7 ${esc(o.gradeName)}, ${esc(o.domain.name)}${o.sub ? ' \u00b7 ' + esc(o.sub.name) : ''}: ${esc(o.text)} <span class="muted">(page ${o.page})</span></p>` : ''; }).join('')}
+      ${(m.scope || []).map(id => { const s = CM.scopeRow(id); return s ? `<p><b>Scope & Sequence</b> \u00b7 ${esc(s.skill)}: ${Object.entries(s.marks).map(([g, k]) => `${g === 'PK' ? 'PK' : g === 'K' ? 'K' : 'Gr ' + g} ${k}`).join(', ')}</p>` : ''; }).join('')}
+      ${m.alignNote ? `<p class="muted">${esc(m.alignNote)}</p>` : ''}
+      ${m.buildsOn ? `<p>Builds on ${m.buildsOn.map(id => { const o = CM.objective(id); return `<b>${id}</b>${o ? ' (' + esc(o.text) + ')' : ''}`; }).join(', ')}.</p>` : ''}
+      ${m.prereqs.length ? `<p>Suggested first: ${m.prereqs.map(id => `<a href="#mission-${id}">${esc(CM.mission(id).title)}</a> ${(CM.store.peek(id) || {}).mastered ? '(mastered)' : ''}`).join(', ')}. <span class="muted">This order is a suggestion of this app, not part of the official standards.</span></p>` : ''}
+      <p><b>Catholic disposition</b> \u00b7 \u201c${esc(m.disposition)}\u201d <span class="muted">${m.dispositionSource ? esc(m.dispositionSource) : (m.grade === '8' ? 'Algebra I dispositions, page 30' : CM.grade(m.grade).label + ' dispositions')}</span></p>
+      <p class="muted">Mastery rule: 3 correct in a row without hints, including one at level 3. A problem solved with help comes back for review.</p>
+    </details>`;
+  }
+
   function render() {
     if (!r || !root) return;
+    if (r.mission.stage) return renderStage();
     const m = r.mission, p = r.prog, t = type();
     const tierLabel = r.stretch ? 'Stretch problem' : `Level ${Math.min(r.tier, CM.rules.topTier)} of ${CM.rules.topTier}`;
     const prereqEvt = r.events.find(e => e.startsWith('prereq:'));
@@ -130,16 +143,56 @@
       html += `<button type="button" class="btn btn-ghost" data-act="hint"${r.running ? ' disabled' : ''}>${r.hint >= 2 ? 'Show me' : 'Hint'}</button>`;
     }
     html += '</div></section>';
-    html += `<details class="about"><summary>About this mission</summary>
-      ${m.standards.map(id => { const o = CM.objective(id); return o ? `<p><b>${id}</b> \u00b7 ${esc(o.gradeName)}, ${esc(o.domain.name)}${o.sub ? ' \u00b7 ' + esc(o.sub.name) : ''}: ${esc(o.text)} <span class="muted">(page ${o.page})</span></p>` : ''; }).join('')}
-      ${(m.scope || []).map(id => { const s = CM.scopeRow(id); return s ? `<p><b>Scope & Sequence</b> \u00b7 ${esc(s.skill)}: ${Object.entries(s.marks).map(([g, k]) => `${g === 'PK' ? 'PK' : g === 'K' ? 'K' : 'Gr ' + g} ${k}`).join(', ')}</p>` : ''; }).join('')}
-      ${m.alignNote ? `<p class="muted">${esc(m.alignNote)}</p>` : ''}
-      ${m.buildsOn ? `<p>Builds on ${m.buildsOn.map(id => { const o = CM.objective(id); return `<b>${id}</b>${o ? ' (' + esc(o.text) + ')' : ''}`; }).join(', ')}.</p>` : ''}
-      ${m.prereqs.length ? `<p>Suggested first: ${m.prereqs.map(id => `<a href="#mission-${id}">${esc(CM.mission(id).title)}</a> ${(CM.store.peek(id) || {}).mastered ? '(mastered)' : ''}`).join(', ')}. <span class="muted">This order is a suggestion of this app, not part of the official standards.</span></p>` : ''}
-      <p><b>Catholic disposition</b> \u00b7 \u201c${esc(m.disposition)}\u201d <span class="muted">${m.dispositionSource ? esc(m.dispositionSource) : (m.grade === '8' ? 'Algebra I dispositions, page 30' : CM.grade(m.grade).label + ' dispositions')}</span></p>
-      <p class="muted">Mastery rule: 3 correct in a row without hints, including one at level 3. A problem solved with help comes back for review.</p>
-    </details>`;
+    html += aboutHtml(m);
     root.innerHTML = html;
+    if (r.speak) { const what = r.speak; r.speak = null; if (CM.Speech.active(m)) CM.Speech.say(spoken(what)); }
+    if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
+  }
+
+  /* ---------- full-screen stage ----------
+   * Missions with `stage: { theme }` render as a scene: a white board with the activity,
+   * and a side panel with the instruction, the speaker, the guide, the tutor's words, and DONE. */
+  const CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+  function renderStage() {
+    const m = r.mission, p = r.prog, t = type(), S = CM.Stage;
+    const said = [];
+    // The type's instruction lines move from the board to the panel.
+    const board = t.view(r).replace(/<p class="(prompt|sub)"[^>]*>([\s\S]*?)<\/p>/g, (x, k, inner) => { said.push(`<p class="st-${k}">${inner}</p>`); return ''; });
+    const mood = r.solved && r.tone === 'good' ? 'happy' : r.tone === 'hint' ? 'think' : 'calm';
+    const prereqEvt = r.events.find(e => e.startsWith('prereq:'));
+    const isChoice = typeof t.choice === 'function' ? t.choice(r) : t.choice;
+    const speak = CM.Speech.supported() && CM.Speech.offered(m);
+    const level = r.stretch ? 'Stretch' : `Level ${Math.min(r.tier, CM.rules.topTier)}`;
+    let act = '';
+    if (r.solved) {
+      act += `<button type="button" class="st-done" data-act="next">${p.mastered && !r.stretch && r.events.includes('mastered') ? 'Keep going' : 'Next'}</button>`;
+      if (p.mastered && m.items.some(i => i.tier === CM.rules.stretchTier)) act += `<button type="button" class="st-small" data-act="stretch">Stretch problem</button>`;
+    } else {
+      act += `<button type="button" class="st-small" data-act="hint"${r.running ? ' disabled' : ''}>${r.hint >= 2 ? 'Show me' : 'Hint'}</button>`;
+      if (!isChoice) act += `<button type="button" class="st-done" data-act="check"${r.running ? ' disabled' : ''}>${t.checkLabel || 'Done'}</button>`;
+    }
+    root.innerHTML = `<div class="stage theme-${m.stage.theme}">
+        ${S.scene(m.stage.theme)}
+        <div class="st-side" aria-hidden="true"></div>
+        <section class="board" aria-label="${esc(m.title)}">${board}
+          ${r.solved ? `<div class="st-explain"><p class="eyebrow">Why it works</p><p>${t.explain(r)}</p></div>` : ''}
+        </section>
+        <aside class="st-panel">
+          <div class="st-head">
+            <p class="st-meta"><span>${esc(m.title)}</span><span class="st-dots" aria-label="${p.mastered ? 'Mastered' : `${Math.min(p.streak, 3)} of 3 correct in a row`}">${masteryDots(p)}</span></p>
+            <a class="st-close" href="#path-${m.grade}" aria-label="Close mission">${CLOSE}</a>
+          </div>
+          <div class="st-text">${said.join('')}</div>
+          ${speak ? `<div class="st-voice">${voiceControls(m)}</div>` : ''}
+          <div class="st-guide">
+            ${S.mascot(mood)}
+            ${r.msg ? `<div class="bubble ${r.tone === 'good' ? 'good' : r.tone === 'info' ? 'info' : ''}" role="status"><p>${r.msg}</p></div>` : ''}
+            ${prereqEvt ? `<div class="bubble info"><p>This builds on ${prereqEvt.slice(7).split(',').map(id => `<a href="#mission-${id}">${esc(CM.mission(id).title)}</a>`).join(' and ')}. Try that first.</p></div>` : ''}
+          </div>
+        </aside>
+        <div class="st-actions"><span class="st-level">${level}</span>${act}</div>
+      </div>
+      ${aboutHtml(m)}`;
     if (r.speak) { const what = r.speak; r.speak = null; if (CM.Speech.active(m)) CM.Speech.say(spoken(what)); }
     if (focusSel) { const el = root.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); focusSel = null; }
   }
@@ -240,12 +293,29 @@
         ev.preventDefault();
         return;
       }
+      // Sweep: drag a finger across cells (e.g. the snowball field); each new cell is sent as handle(r, 'sweep', cell).
+      const sw = ev.target.closest('[data-sweep]');
+      if (sw && root.contains(sw) && !sw.disabled) {
+        drag = { sweep: true, id: ev.pointerId, last: sw.dataset.r + ',' + sw.dataset.c, moved: false };
+        apply(type().handle(r, 'sweep', sw));
+        ev.preventDefault();
+        return;
+      }
       const src = ev.target.closest('[data-drag]');
       if (!src || !root.contains(src) || src.disabled) return;
       drag = { src, x: ev.clientX, y: ev.clientY, id: ev.pointerId, ghost: null, over: null };
     });
     document.addEventListener('pointermove', ev => {
       if (!drag || ev.pointerId !== drag.id) return;
+      if (drag.sweep) {
+        const under = document.elementFromPoint(ev.clientX, ev.clientY), cell = under && under.closest('[data-sweep]');
+        if (cell && root.contains(cell) && !cell.disabled) {
+          const k = cell.dataset.r + ',' + cell.dataset.c;
+          if (k !== drag.last) { drag.last = k; drag.moved = true; apply(type().handle(r, 'sweep', cell)); }
+        }
+        ev.preventDefault();
+        return;
+      }
       if (drag.dial) {
         drag.angle = dialAngle(drag.dial, ev);
         if (drag.hand) drag.hand.setAttribute('transform', `rotate(${drag.angle} ${drag.hand.dataset.cx} ${drag.hand.dataset.cy})`);
@@ -273,6 +343,7 @@
     const finishDrag = ev => {
       if (!drag || ev.pointerId !== drag.id) return;
       const d = drag;
+      if (d.sweep) { drag = null; suppressClick = true; setTimeout(() => { suppressClick = false; }, 0); return; }
       if (d.dial) {
         endDrag();
         suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
@@ -305,6 +376,7 @@
       t.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       return;
     }
+    if (type().key && !r.solved && root.contains(t)) { const res = type().key(r, ev.key); if (res) { ev.preventDefault(); apply(res); return; } }
     if (ev.key !== 'Enter' || !(t.dataset && t.dataset.field)) return;
     ev.preventDefault();
     check();
