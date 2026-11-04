@@ -168,7 +168,8 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
   const k = CM.MISSIONS.filter(m => S.offered(m));
   ok(CM.MISSIONS.filter(m => m.grade === 'K').every(m => S.offered(m)), 'read-aloud: offered on every Kindergarten mission');
   ok(S.offered(CM.mission('g3-arrays')), 'read-aloud: offered on stage missions above grade 2');
-  ok(!S.offered(CM.mission('g3-add-regroup')) && !S.offered(CM.mission('g8-balance')), 'read-aloud: not offered above grade 2 without a stage');
+  ok(!S.offered({ grade: '3' }) && !S.offered({ grade: '8' }), 'read-aloud: not offered above grade 2 without a stage');
+  ok(CM.MISSIONS.every(m => m.stage && S.offered(m)), 'every mission is on the stage and can read aloud');
   k.forEach(m => m.items.forEach((item, i) => {
     const T = CM.TYPES[m.type];
     const r = { mission: m, item, tier: item.tier, attempts: 0, hint: 0, solved: false, prog: [] };
