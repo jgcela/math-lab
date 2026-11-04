@@ -11,6 +11,7 @@ data/standards.js     Generated. Every objective PK–7 and Algebra I with ID, t
 data/scope.js         Generated. The Scope & Sequence table (I/D/M by grade, PK–8).
 data/curriculum.js    Grades, the grade 8 mapping, missions, challenges, Math Lab tools.
 js/core.js            Curriculum index, learning-path builder, progress store, mastery rules, recommendations.
+js/stage.js           Full-screen mission stage: themed scenery and the owl guide (original SVG art).
 js/speech.js          Read-aloud for K–2 missions (browser voice, Web Speech API). Pure text helpers are tested under Node.
 js/types/*.js         One file per mission type. Each exports init, view, handle, check, hint, show, explain.
 js/engine.js          Runs any mission type: challenge → check → hints → worked solution → explanation → mastery.
@@ -82,3 +83,11 @@ Missions in the K–2 band read themselves aloud with the browser's own voice (`
 - The voice is picked from the device's US English voices, preferring natural ones (Samantha, Ava, Google US English, Microsoft Aria/Jenny).
 
 Not tested on a real iPad yet: the tests use a stand-in voice.
+
+## Full-screen stage (sample)
+
+Missions with `stage: { theme }` in `data/curriculum.js` open full screen: a themed scene, a white board with the activity, and a side panel with the instruction, the speaker, an owl guide whose face reacts (calm, thinking, happy), the tutor's words, and a big DONE button. On phones and portrait tablets the panel moves above the board.
+
+Two missions use it so far, as samples: **Count and Build** (K, meadow) and **Array Builder** (grade 3, snow). Array Builder was rebuilt for it: the child sweeps a finger across a 10 × 10 field of snowballs to frame the rows and columns, then picks the total from three cards. One card is always a + b, so adding instead of multiplying is still caught. Arrow keys move the frame for keyboard users.
+
+All art is drawn in code as flat shapes. It is original and simple; it does not match hand-made illustration.

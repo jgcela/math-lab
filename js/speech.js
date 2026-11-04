@@ -38,7 +38,8 @@
 
   /* ---------- settings ---------- */
   /* Read-aloud is offered where children may not read yet: the K\u20132 band. */
-  S.offered = mission => !!mission && (CM.grade(mission.grade) || {}).band === 'k2';
+  /* and on every full-screen stage mission, where the speaker sits next to the instruction. */
+  S.offered = mission => !!mission && (!!mission.stage || (CM.grade(mission.grade) || {}).band === 'k2');
   /* Per child, on by default. Stored with the child's progress. */
   S.on = () => CM.store.state.audio !== false;
   S.setOn = v => { CM.store.state.audio = !!v; if (!v) S.stop(); CM.store.save(); };

@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {}, console };
 ctx.global = ctx; ctx.window = ctx;
 vm.createContext(ctx);
-for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
+for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js'])
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const CM = ctx.CM;
 CM.store.load(null);
@@ -166,8 +166,9 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
   ok(S.prompt('<p class="prompt">How many stars?</p><p class="sub">Touch each one as you count.</p><div>x</div>') === 'How many stars? Touch each one as you count.', 'read-aloud: prompt joins prompt and sub lines');
   ok(!S.supported(), 'read-aloud: no voice under Node, and nothing throws');
   const k = CM.MISSIONS.filter(m => S.offered(m));
-  ok(k.length === CM.MISSIONS.filter(m => m.grade === 'K').length && k.length >= 7, 'read-aloud: offered on every Kindergarten mission');
-  ok(!S.offered(CM.mission('g3-arrays')) && !S.offered(CM.mission('g8-balance')), 'read-aloud: not offered above grade 2');
+  ok(CM.MISSIONS.filter(m => m.grade === 'K').every(m => S.offered(m)), 'read-aloud: offered on every Kindergarten mission');
+  ok(S.offered(CM.mission('g3-arrays')), 'read-aloud: offered on stage missions above grade 2');
+  ok(!S.offered(CM.mission('g3-add-regroup')) && !S.offered(CM.mission('g8-balance')), 'read-aloud: not offered above grade 2 without a stage');
   k.forEach(m => m.items.forEach((item, i) => {
     const T = CM.TYPES[m.type];
     const r = { mission: m, item, tier: item.tier, attempts: 0, hint: 0, solved: false, prog: [] };
@@ -187,6 +188,31 @@ CM.mission('k-shape-hunt').items.forEach(i => ok(CM.SCENES[i.scene].parts.filter
   CM.TYPES.tenframe.init(tf);
   ok(CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '2' } }).say === '1' && CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '0' } }).say === '2', 'read-aloud: counting says the next number');
   ok(CM.TYPES.tenframe.handle(tf, 'tap', { dataset: { i: '0' } }).say === '', 'read-aloud: untapping says nothing');
+})();
+
+/* 7. Stage missions */
+(() => {
+  CM.MISSIONS.filter(m => m.stage).forEach(m => ok(CM.Stage.THEMES.includes(m.stage.theme), `${m.id}: stage theme ${m.stage.theme} exists`));
+  ok(CM.Stage.mascot('happy').includes('<svg') && CM.Stage.mascot('think').includes('pupil'), 'stage: guide draws every mood');
+  CM.mission('g3-arrays').items.forEach(item => {
+    const c = CM.TYPES.arrays.choices(item), { a, b } = item;
+    ok(c.length === 3 && new Set(c).size === 3 && c.includes(a * b) && c.includes(a + b) && c.every(v => v > 0), `arrays ${a}x${b}: 3 choices with the product and the sum (${c})`);
+    const r = { mission: CM.mission('g3-arrays'), item };
+    CM.TYPES.arrays.init(r);
+    ok(CM.TYPES.arrays.check(r).nudge, `arrays ${a}x${b}: DONE before building only nudges`);
+    CM.TYPES.arrays.handle(r, 'sweep', { dataset: { r: String(b), c: String(a) } }); r.answer = String(a * b);
+    ok(CM.TYPES.arrays.check(r).ok, `arrays ${a}x${b}: turned array (${b} rows of ${a}) is accepted`);
+    r.answer = String(a + b);
+    ok(CM.TYPES.arrays.check(r).err === 'added', `arrays ${a}x${b}: picking ${a + b} is caught as adding`);
+  });
+  const ar = { mission: CM.mission('g3-arrays'), item: { a: 3, b: 4 } }; CM.TYPES.arrays.init(ar);
+  CM.TYPES.arrays.key(ar, 'ArrowDown'); CM.TYPES.arrays.key(ar, 'ArrowDown'); CM.TYPES.arrays.key(ar, 'ArrowRight');
+  ok(ar.rows === 3 && ar.cols === 2, 'arrays: arrow keys move the corner');
+  CM.mission('k-count-build').items.filter(i => i.mode === 'count').forEach(item => {
+    const r = { mission: CM.mission('k-count-build'), item, hint: 0 }; CM.TYPES.tenframe.init(r);
+    const tiles = [...CM.TYPES.tenframe.view(r).matchAll(/data-act="pick" data-n="(\d+)"/g)].map(x => +x[1]);
+    ok(tiles.length === 4 && tiles.includes(item.n), `count ${item.n}: four answer cards include the answer (${tiles})`);
+  });
 })();
 
 console.log(`${pass} passed, ${fail} failed`);

@@ -267,6 +267,7 @@
     header();
     const g = route.name === 'mission' && CM.mission(route.id) ? CM.mission(route.id).grade : route.name === 'path' ? route.grade : S().profile.grade;
     document.body.dataset.band = band(g);
+    document.body.classList.toggle('immersive', route.name === 'mission' && !!(CM.mission(route.id) || {}).stage);
     view.className = 'view v-' + route.name;
     if (route.name === 'home') view.innerHTML = home();
     else if (route.name === 'path') view.innerHTML = pathView();
