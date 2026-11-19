@@ -53,6 +53,32 @@ CM.MISSIONS.forEach(m => m.items.forEach((item, k) => {
 const T = CM.TYPES;
 function run(type, item, setup) { const m = { id: 't', type, items: [] }; const r = { mission: m, item, attempts: 0, hint: 0 }; T[type].init(r); setup(r); return T[type].check(r); }
 ok(run('addRegroup', { x: 47, y: 25 }, r => r.answer = '62').err === 'nocarry', '47+25=62 → forgot to carry');
+/* Grade 2: random problems follow each level's rule, never repeat back to back, and their worked solutions pass */
+(() => {
+  let seed = 7; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  CM.MISSIONS.filter(m => m.random).forEach(m => {
+    const op = CM.G2_GEN[m.type];
+    m.items.forEach((i, k) => ok(CM.G2_OK[op](i.tier, i.x, i.y), `${m.id}#${k} fixed example ${i.x},${i.y} follows level ${i.tier}'s rule`));
+    [1, 2, 3, 4].forEach(t => {
+      let prev = null, bad = 0, fell = 0, rep = 0; const seen = new Set();
+      for (let n = 0; n < 1500; n++) {
+        const it = CM.genItem(m, t, prev, rng);
+        if (!CM.G2_OK[op](t, it.x, it.y)) bad++;
+        if (m.items.includes(it)) fell++;
+        if (prev && prev.x === it.x && prev.y === it.y) rep++;
+        seen.add(it.x + ',' + it.y);
+        const r = { mission: m, item: it, tier: t, attempts: 0, hint: 0, solved: false }; T[m.type].init(r); T[m.type].show(r);
+        if (!T[m.type].check(r).ok) bad++;
+        prev = it;
+      }
+      ok(!bad && !fell && !rep, `${m.id} level ${t}: 1500 random problems follow the rule and solve (bad ${bad}, fallback ${fell}, repeats ${rep})`);
+      ok(seen.size >= 30, `${m.id} level ${t}: at least 30 different problems (${seen.size})`);
+    });
+  });
+  const st = CM.store.state, m = CM.mission('g2-add-column'), prog = CM.store.m(m.id);
+  const a = CM.pickItem(m, prog).item, b = CM.pickItem(m, prog).item;
+  ok(a.x + a.y !== b.x + b.y, 'pickItem: random missions do not repeat the answer back to back');
+})();
 /* Grade 2: blocks and columns */
 (() => {
   const mk = (type, item) => { const r = { mission: { id: 't', type, items: [] }, item, attempts: 0, hint: 0 }; T[type].init(r); return r; };

@@ -31,6 +31,63 @@
     return { err: 'other', tag: 'Subtracted incorrectly' };
   }
 
+
+  /* ---------- random problems ----------
+   * Each grade 2 mission draws a new problem for its level, so answers can't be remembered.
+   * Every level keeps one rule (no trade / make a ten / two-digit trade / three digits), checked in the tests.
+   * The fixed items in curriculum.js stay as examples of each level and as test cases. */
+  const R = (rng, a, b) => a + Math.floor(rng() * (b - a + 1));
+  const oc = (x, y) => x % 10 + y % 10 >= 10;                         // ones carry
+  const tc = (x, y) => Math.floor(x / 10) % 10 + Math.floor(y / 10) % 10 + (oc(x, y) ? 1 : 0) >= 10; // tens carry
+  const ob = (x, y) => x % 10 < y % 10;                               // ones borrow
+  const RULES = {
+    add: {
+      1: [rng => [R(rng, 1, 8), R(rng, 1, 8)], rng => [R(rng, 11, 89), R(rng, 1, 9)], rng => [R(rng, 11, 79), R(rng, 11, 79)]],
+      2: [rng => [R(rng, 2, 9), R(rng, 2, 9)], rng => [R(rng, 11, 89), R(rng, 2, 9)]],
+      3: [rng => [R(rng, 11, 79), R(rng, 11, 79)]],
+      4: [rng => [R(rng, 25, 99), R(rng, 25, 99)], rng => [R(rng, 101, 799), R(rng, 15, 99)]],
+      colAdd: { 1: [rng => [R(rng, 11, 79), R(rng, 11, 79)]], 2: [rng => [R(rng, 11, 89), R(rng, 2, 9)]], 3: [rng => [R(rng, 11, 79), R(rng, 11, 79)]], 4: [rng => [R(rng, 101, 599), R(rng, 101, 399)]] }
+    },
+    sub: {
+      1: [rng => { const x = R(rng, 2, 9); return [x, R(rng, 1, x - 1)]; }, rng => [R(rng, 11, 99), R(rng, 1, 9)], rng => { const x = R(rng, 21, 99); return [x, R(rng, 10, x - 10)]; }],
+      2: [rng => [R(rng, 11, 18), R(rng, 2, 9)], rng => [R(rng, 20, 99), R(rng, 2, 9)]],
+      3: [rng => { const x = R(rng, 30, 99); return [x, R(rng, 11, x - 11)]; }],
+      4: [rng => [R(rng, 101, 509), R(rng, 15, 99)], rng => { const h = R(rng, 1, 5); return [h * 100 + R(rng, 0, 9), R(rng, 15, 99)]; }],
+      colSub: { 1: [rng => { const x = R(rng, 21, 99); return [x, R(rng, 10, x - 10)]; }, rng => [R(rng, 11, 99), R(rng, 1, 9)]], 2: [rng => [R(rng, 20, 99), R(rng, 2, 9)]], 3: [rng => { const x = R(rng, 30, 99); return [x, R(rng, 11, x - 11)]; }],
+        4: [rng => { const h = R(rng, 2, 9); return [h * 100 + R(rng, 0, 9), R(rng, 101, h * 100 - 1)]; }] }
+    }
+  };
+  /* The rule each level must satisfy. */
+  CM.G2_OK = {
+    add(t, x, y) {
+      const s = x + y;
+      if (t === 1) return !oc(x, y) && s < 100;
+      if (t === 2) return oc(x, y) && s < 100 && (x < 10 || y < 10);
+      if (t === 3) return oc(x, y) && s < 100 && x >= 11 && y >= 11;
+      return oc(x, y) && tc(x, y) && s >= 100 && s < 1000;
+    },
+    sub(t, x, y) {
+      if (y < 1 || y >= x) return false;
+      if (t === 1) return !ob(x, y) && Math.floor(x / 10) % 10 >= Math.floor(y / 10) % 10 && x < 100;
+      if (t === 2) return ob(x, y) && x < 100 && y < 10;
+      if (t === 3) return ob(x, y) && x < 100 && y >= 11;
+      return ob(x, y) && x >= 100 && x < 1000 && x - y >= 10;
+    }
+  };
+  CM.G2_GEN = { blockAdd: 'add', colAdd: 'add', blockSub: 'sub', colSub: 'sub' };
+  CM.genItem = function (mission, tier, prev, rng) {
+    rng = rng || Math.random;
+    const op = CM.G2_GEN[mission.type], set = RULES[op][mission.type] || RULES[op];
+    const makers = set[tier] || set[3];
+    for (let n = 0; n < 500; n++) {
+      const [x, y] = makers[R(rng, 0, makers.length - 1)](rng);
+      if (!CM.G2_OK[op](tier, x, y)) continue;
+      if (prev && ((prev.x === x && prev.y === y) || (op === 'add' ? prev.x + prev.y === x + y : prev.x - prev.y === x - y))) continue;
+      return { tier, x, y };
+    }
+    return mission.items.find(i => i.tier === tier) || mission.items[0];
+  };
+
   /* ---------- blocks: one mat of hundreds, tens, and ones ---------- */
   const NAME = { h: ['hundred', 'hundreds'], t: ['ten', 'tens'], o: ['one', 'ones'] };
   const nm = (k, n) => NAME[k][n === 1 ? 0 : 1];

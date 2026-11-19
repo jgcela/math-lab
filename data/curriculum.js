@@ -142,7 +142,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g2-add-blocks', grade: '2', type: 'blockAdd', stage: { theme: 'meadow' },
+    id: 'g2-add-blocks', grade: '2', type: 'blockAdd', random: true, stage: { theme: 'meadow' },
     title: 'Add with Blocks',
     goal: 'Put two numbers together with tens and ones. Trade 10 ones for 1 ten.',
     standards: ['2.I.B.1', '2.I.B.3', '2.I.B.4'], scope: ['SS-I-24', 'SS-I-25', 'SS-I-26', 'SS-I-27'],
@@ -157,7 +157,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g2-sub-blocks', grade: '2', type: 'blockSub', stage: { theme: 'sea' },
+    id: 'g2-sub-blocks', grade: '2', type: 'blockSub', random: true, stage: { theme: 'sea' },
     title: 'Take Away with Blocks',
     goal: 'Take blocks away. When there are not enough ones, break a ten into 10 ones.',
     standards: ['2.I.B.1', '2.I.B.3', '2.I.B.4', '2.I.D.4'], scope: ['SS-I-24', 'SS-I-25', 'SS-I-27', 'SS-I-46'],
@@ -172,7 +172,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g2-add-column', grade: '2', type: 'colAdd', stage: { theme: 'space' },
+    id: 'g2-add-column', grade: '2', type: 'colAdd', random: true, stage: { theme: 'space' },
     title: 'Add in Columns',
     goal: 'Add the ones, then the tens. Carry the little 1 when a column makes 10 or more.',
     standards: ['2.I.B.4'], scope: ['SS-I-25', 'SS-I-27'],
@@ -187,7 +187,7 @@ CM.MISSIONS = [
     ]
   },
   {
-    id: 'g2-sub-column', grade: '2', type: 'colSub', stage: { theme: 'snow' },
+    id: 'g2-sub-column', grade: '2', type: 'colSub', random: true, stage: { theme: 'snow' },
     title: 'Subtract in Columns',
     goal: 'Subtract the ones, then the tens. Regroup when the top digit is too small.',
     standards: ['2.I.B.4', '2.I.B.5', '2.I.D.4'], scope: ['SS-I-25', 'SS-I-27', 'SS-I-46'],

@@ -61,7 +61,7 @@ The document has no 8th Grade section. The app's grade 8 path has two clearly la
 | Learning path for every grade, K–8, with all skills | Built |
 | Student dashboard, recommendations, continue learning | Built |
 | Mission engine with hints, worked solutions, explanations, mastery, review | Built |
-| Missions | 19: K (7, six of them picture-first), Grade 2 addition and subtraction (4: blocks first, then columns), Grade 3 (6), Grade 5 Garden Challenge (1), Grade 8 balance (1) |
+| Missions | 19: K (7, six of them picture-first), Grade 2 addition and subtraction (4: blocks first, then columns; a new random problem each time, by level), Grade 3 (6), Grade 5 Garden Challenge (1), Grade 8 balance (1) |
 | Picture-first interactions | Drag and drop with tap fallback, clock dial, animated robot run, tappable SVG scenes (`js/types/visual.js`) |
 | Math Lab | 4 of 10 tools: fraction bars, base-ten blocks, number line, balance |
 | Challenges | 1: magic square |
