@@ -157,6 +157,8 @@
     if (!pool.length) pool = mission.items.filter(i => i.tier <= tier);
     const k = prog.idx[tier] || 0;
     prog.idx[tier] = k + 1;
+    // Missions marked `random` draw a fresh problem for the level (grade 2 arithmetic, js/types/grade2.js).
+    if (mission.random && CM.genItem) { const item = CM.genItem(mission, tier, prog.lastItem); prog.lastItem = { x: item.x, y: item.y }; return { item, tier }; }
     return { item: pool[k % pool.length], tier };
   };
 

@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 const ctx = { window: {}, console };
 ctx.global = ctx; ctx.window = ctx;
 vm.createContext(ctx);
-for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/kid.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js', 'js/parents.js'])
+for (const f of ['data/standards.js', 'data/scope.js', 'data/curriculum.js', 'js/core.js', 'js/speech.js', 'js/stage.js', 'js/kid.js', 'js/types/shared.js', 'js/types/fractions.js', 'js/types/arith.js', 'js/types/grade2.js', 'js/types/tenframe.js', 'js/types/visual.js', 'js/types/garden.js', 'js/types/balance.js', 'js/parents.js'])
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const CM = ctx.CM;
 CM.store.load(null);
@@ -53,6 +53,63 @@ CM.MISSIONS.forEach(m => m.items.forEach((item, k) => {
 const T = CM.TYPES;
 function run(type, item, setup) { const m = { id: 't', type, items: [] }; const r = { mission: m, item, attempts: 0, hint: 0 }; T[type].init(r); setup(r); return T[type].check(r); }
 ok(run('addRegroup', { x: 47, y: 25 }, r => r.answer = '62').err === 'nocarry', '47+25=62 → forgot to carry');
+/* Grade 2: random problems follow each level's rule, never repeat back to back, and their worked solutions pass */
+(() => {
+  let seed = 7; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  CM.MISSIONS.filter(m => m.random).forEach(m => {
+    const op = CM.G2_GEN[m.type];
+    m.items.forEach((i, k) => ok(CM.G2_OK[op](i.tier, i.x, i.y), `${m.id}#${k} fixed example ${i.x},${i.y} follows level ${i.tier}'s rule`));
+    [1, 2, 3, 4].forEach(t => {
+      let prev = null, bad = 0, fell = 0, rep = 0; const seen = new Set();
+      for (let n = 0; n < 1500; n++) {
+        const it = CM.genItem(m, t, prev, rng);
+        if (!CM.G2_OK[op](t, it.x, it.y)) bad++;
+        if (m.items.includes(it)) fell++;
+        if (prev && prev.x === it.x && prev.y === it.y) rep++;
+        seen.add(it.x + ',' + it.y);
+        const r = { mission: m, item: it, tier: t, attempts: 0, hint: 0, solved: false }; T[m.type].init(r); T[m.type].show(r);
+        if (!T[m.type].check(r).ok) bad++;
+        prev = it;
+      }
+      ok(!bad && !fell && !rep, `${m.id} level ${t}: 1500 random problems follow the rule and solve (bad ${bad}, fallback ${fell}, repeats ${rep})`);
+      ok(seen.size >= 30, `${m.id} level ${t}: at least 30 different problems (${seen.size})`);
+    });
+  });
+  const st = CM.store.state, m = CM.mission('g2-add-column'), prog = CM.store.m(m.id);
+  const a = CM.pickItem(m, prog).item, b = CM.pickItem(m, prog).item;
+  ok(a.x + a.y !== b.x + b.y, 'pickItem: random missions do not repeat the answer back to back');
+})();
+/* Grade 2: blocks and columns */
+(() => {
+  const mk = (type, item) => { const r = { mission: { id: 't', type, items: [] }, item, attempts: 0, hint: 0 }; T[type].init(r); return r; };
+  let r = mk('blockAdd', { x: 38, y: 25 });
+  ok(r.s.t === 5 && r.s.o === 13, 'blockAdd 38+25: mat starts with 5 tens and 13 ones');
+  ok(T.blockAdd.check(r).nudge, 'blockAdd: blank answer with 13 ones nudges to trade');
+  T.blockAdd.handle(r, 'tradeO'); ok(r.s.t === 6 && r.s.o === 3, 'blockAdd: trade makes 6 tens 3 ones');
+  ok(!T.blockAdd.handle(r, 'tradeO'), 'blockAdd: no second trade with 3 ones');
+  r.answer = '53'; ok(T.blockAdd.check(r).err === 'nocarry', 'blockAdd 38+25=53 → forgot to trade');
+  r.answer = '63'; ok(T.blockAdd.check(r).ok, 'blockAdd 38+25=63');
+  r = mk('blockAdd', { x: 68, y: 57 }); T.blockAdd.show(r); ok(r.s.h === 1 && r.s.t === 2 && r.s.o === 5, 'blockAdd 68+57: two trades give 1 hundred 2 tens 5 ones');
+  r = mk('blockSub', { x: 52, y: 27 });
+  ok(!T.blockSub.handle(r, 'take', { dataset: { k: 'o', i: '1' } }) === false, 'blockSub: tapping a block is handled');
+  ok(r.gone.o === 1, 'blockSub: one one crossed out');
+  T.blockSub.handle(r, 'take', { dataset: { k: 'o', i: '1' } }); ok(r.gone.o === 0, 'blockSub: tapping a crossed block puts it back');
+  T.blockSub.handle(r, 'breakT'); ok(r.s.t === 4 && r.s.o === 12, 'blockSub: breaking a ten gives 4 tens 12 ones');
+  r.answer = '35'; ok(T.blockSub.check(r).err === 'flip', 'blockSub 52−27=35 → smaller from larger');
+  r = mk('blockSub', { x: 52, y: 27 }); r.gone = { h: 0, t: 2, o: 2 }; r.answer = '30'; ok(T.blockSub.check(r).err === 'took', 'blockSub: took 22 instead of 27 is caught');
+  r = mk('blockSub', { x: 203, y: 47 }); T.blockSub.show(r); ok(r.s.h === 1 && r.s.t === 9 && r.s.o === 13 && T.blockSub.check(r).ok, 'blockSub 203−47: break a hundred, then a ten');
+  r = mk('colAdd', { x: 47, y: 25 }); r.d0 = '2'; r.d1 = '6'; ok(T.colAdd.check(r).err === 'nocarry', 'colAdd 47+25=62 → forgot to carry');
+  r.d1 = '7'; let res = T.colAdd.check(r); ok(res.ok && /little 1/.test(res.note), 'colAdd: right answer without the carry box gets a reminder');
+  r = mk('colAdd', { x: 47, y: 25 }); r.d1 = '7'; ok(T.colAdd.check(r).nudge, 'colAdd: empty ones box nudges');
+  r = mk('colAdd', { x: 389, y: 256 }); T.colAdd.show(r); ok(r.c1 === '1' && r.c2 === '1' && T.colAdd.check(r).ok && !T.colAdd.check(r).note, 'colAdd 389+256: two carries, no reminder');
+  r = mk('colSub', { x: 52, y: 27 }); r.d0 = '5'; r.d1 = '3'; ok(T.colSub.check(r).err === 'flip', 'colSub 52−27=35 → flip');
+  r.d1 = '2'; ok(T.colSub.check(r).ok, 'colSub 52−27=25');
+  r = mk('colSub', { x: 400, y: 135 });
+  ok(!T.colSub.handle(r, 'regroup', { dataset: { i: '1' } }), 'colSub 400: tens 0 cannot regroup');
+  T.colSub.handle(r, 'regroup', { dataset: { i: '2' } }); T.colSub.handle(r, 'regroup', { dataset: { i: '1' } });
+  ok(r.reg.join(',') === '10,9,3', 'colSub 400: hundreds then tens gives 3 | 9 | 10');
+  r = mk('colSub', { x: 104, y: 98 }); r.d0 = '6'; ok(T.colSub.check(r).ok, 'colSub 104−98=6 with empty leading boxes');
+})();
 ok(run('addRegroup', { x: 47, y: 25 }, r => r.answer = '612').err === 'concat', '47+25=612 → concat');
 ok(run('subRegroup', { x: 52, y: 27 }, r => r.answer = '35').err === 'flip', '52−27=35 → smaller from larger');
 ok(run('subRegroup', { x: 400, y: 135 }, r => r.answer = '265').ok, '400−135=265');

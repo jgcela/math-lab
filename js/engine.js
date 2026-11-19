@@ -455,6 +455,9 @@
     if (!f) return;
     ev.target.value = ev.target.value.replace(f === 'answer' && r.mission.type === 'balance' ? /[^0-9-]/g : /\D/g, '');
     r[f] = ev.target.value;
+    // Single-digit boxes (column arithmetic) move on to the next box once a digit is typed.
+    const next = ev.target.dataset.next;
+    if (next && ev.target.value) { const n = root && root.querySelector(next); if (n && !n.disabled) { n.focus(); if (n.select) n.select(); } }
   };
   E.onKey = function (ev) {
     if (!r) return;

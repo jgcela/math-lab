@@ -13,7 +13,7 @@ data/curriculum.js    Grades, the grade 8 mapping, missions, challenges, Math La
 js/core.js            Curriculum index, learning-path builder, progress store, mastery rules, recommendations.
 js/stage.js           Full-screen mission stage: themed scenery and the owl guide (original SVG art).
 js/speech.js          Read-aloud for K–2 missions (browser voice, Web Speech API). Pure text helpers are tested under Node.
-js/types/*.js         One file per mission type. Each exports init, view, handle, check, hint, show, explain.
+js/types/*.js         One file per mission type (grade2.js: blocks and column addition and subtraction). Each exports init, view, handle, check, hint, show, explain.
 js/engine.js          Runs any mission type: challenge → check → hints → worked solution → explanation → mastery.
 js/lab.js             Math Lab tools.
 js/challenges.js      Challenges.
@@ -61,7 +61,7 @@ The document has no 8th Grade section. The app's grade 8 path has two clearly la
 | Learning path for every grade, K–8, with all skills | Built |
 | Student dashboard, recommendations, continue learning | Built |
 | Mission engine with hints, worked solutions, explanations, mastery, review | Built |
-| Missions | 15: K (7, six of them picture-first), Grade 3 (6), Grade 5 Garden Challenge (1), Grade 8 balance (1) |
+| Missions | 19: K (7, six of them picture-first), Grade 2 addition and subtraction (4: blocks first, then columns; a new random problem each time, by level), Grade 3 (6), Grade 5 Garden Challenge (1), Grade 8 balance (1) |
 | Picture-first interactions | Drag and drop with tap fallback, clock dial, animated robot run, tappable SVG scenes (`js/types/visual.js`) |
 | Math Lab | 4 of 10 tools: fraction bars, base-ten blocks, number line, balance |
 | Challenges | 1: magic square |
@@ -70,7 +70,7 @@ The document has no 8th Grade section. The app's grade 8 path has two clearly la
 | Accounts, classes, sync, teacher roster | Not built |
 | Read-aloud for pre-readers (K–2) | Built: instructions, hints, feedback and explanations, with Hear it and an on/off toggle per child. Uses the device's built-in voice, so quality depends on the device. |
 
-Missions cover 19 of the 480 skills on the K–8 path. The rest of the path lists skills with “No mission yet.”
+Missions cover 24 of the 480 skills on the K–8 path. The rest of the path lists skills with “No mission yet.”
 
 ## Read-aloud
 
