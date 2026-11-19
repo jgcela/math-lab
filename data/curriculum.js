@@ -142,6 +142,66 @@ CM.MISSIONS = [
     ]
   },
   {
+    id: 'g2-add-blocks', grade: '2', type: 'blockAdd', stage: { theme: 'meadow' },
+    title: 'Add with Blocks',
+    goal: 'Put two numbers together with tens and ones. Trade 10 ones for 1 ten.',
+    standards: ['2.I.B.1', '2.I.B.3', '2.I.B.4'], scope: ['SS-I-24', 'SS-I-25', 'SS-I-26', 'SS-I-27'],
+    alignNote: 'Grade 2 adds and subtracts with regrouping (2.I.B.4) using concrete models first (2.I.B.1). Level 1 has no trade; level 2 is facts to 20 that make a ten (2.I.B.3); level 3 is two-digit sums with a trade. Stretch problems reach three digits, which 2.I.B.4 also covers.',
+    disposition: 'Develop lines of inquiry (as developmentally appropriate) to understand why things are true and why they are false.',
+    prereqs: [],
+    items: [
+      { tier: 1, x: 6, y: 3 }, { tier: 1, x: 4, y: 5 }, { tier: 1, x: 23, y: 5 }, { tier: 1, x: 31, y: 14 },
+      { tier: 2, x: 8, y: 5 }, { tier: 2, x: 7, y: 6 }, { tier: 2, x: 9, y: 4 }, { tier: 2, x: 26, y: 7 },
+      { tier: 3, x: 38, y: 25 }, { tier: 3, x: 47, y: 16 }, { tier: 3, x: 29, y: 34 }, { tier: 3, x: 55, y: 27 },
+      { tier: 4, x: 68, y: 57 }, { tier: 4, x: 146, y: 78 }
+    ]
+  },
+  {
+    id: 'g2-sub-blocks', grade: '2', type: 'blockSub', stage: { theme: 'sea' },
+    title: 'Take Away with Blocks',
+    goal: 'Take blocks away. When there are not enough ones, break a ten into 10 ones.',
+    standards: ['2.I.B.1', '2.I.B.3', '2.I.B.4', '2.I.D.4'], scope: ['SS-I-24', 'SS-I-25', 'SS-I-27', 'SS-I-46'],
+    alignNote: 'Subtraction with a model (2.I.B.1). Level 1 needs no regrouping; level 2 is facts to 20 and two-digit minus one-digit that break a ten; level 3 is two-digit minus two-digit with regrouping (2.I.B.4). Every explanation checks the answer by adding back, the inverse relationship in 2.I.D.4. Stretch problems include subtracting across a zero (2.I.B.5).',
+    disposition: 'Develop lines of inquiry (as developmentally appropriate) to understand why things are true and why they are false.',
+    prereqs: ['g2-add-blocks'],
+    items: [
+      { tier: 1, x: 9, y: 4 }, { tier: 1, x: 27, y: 5 }, { tier: 1, x: 48, y: 23 },
+      { tier: 2, x: 13, y: 6 }, { tier: 2, x: 15, y: 8 }, { tier: 2, x: 32, y: 7 }, { tier: 2, x: 41, y: 5 },
+      { tier: 3, x: 52, y: 27 }, { tier: 3, x: 63, y: 38 }, { tier: 3, x: 70, y: 24 }, { tier: 3, x: 81, y: 46 },
+      { tier: 4, x: 124, y: 58 }, { tier: 4, x: 203, y: 47 }
+    ]
+  },
+  {
+    id: 'g2-add-column', grade: '2', type: 'colAdd', stage: { theme: 'space' },
+    title: 'Add in Columns',
+    goal: 'Add the ones, then the tens. Carry the little 1 when a column makes 10 or more.',
+    standards: ['2.I.B.4'], scope: ['SS-I-25', 'SS-I-27'],
+    alignNote: 'The written method for 2.I.B.4, after the block missions. Level 1 has no carrying; level 2 is two-digit plus one-digit with a carry; level 3 is two-digit plus two-digit with a carry. Stretch problems carry twice with three digits.',
+    disposition: 'Develop the mental habits of precise, determined, careful, and accurate questioning, inquiry, and reasoning.',
+    prereqs: ['g2-add-blocks'],
+    items: [
+      { tier: 1, x: 34, y: 25 }, { tier: 1, x: 52, y: 16 }, { tier: 1, x: 41, y: 37 },
+      { tier: 2, x: 36, y: 8 }, { tier: 2, x: 27, y: 5 }, { tier: 2, x: 49, y: 6 },
+      { tier: 3, x: 47, y: 25 }, { tier: 3, x: 38, y: 46 }, { tier: 3, x: 59, y: 33 }, { tier: 3, x: 66, y: 27 },
+      { tier: 4, x: 275, y: 148 }, { tier: 4, x: 389, y: 256 }
+    ]
+  },
+  {
+    id: 'g2-sub-column', grade: '2', type: 'colSub', stage: { theme: 'snow' },
+    title: 'Subtract in Columns',
+    goal: 'Subtract the ones, then the tens. Regroup when the top digit is too small.',
+    standards: ['2.I.B.4', '2.I.B.5', '2.I.D.4'], scope: ['SS-I-25', 'SS-I-27', 'SS-I-46'],
+    alignNote: 'The written method for 2.I.B.4, after the block missions. Level 1 needs no regrouping; level 2 is two-digit minus one-digit with regrouping; level 3 is two-digit minus two-digit with regrouping, including a zero in the ones. Stretch problems subtract across zeros of three-digit numbers (2.I.B.5).',
+    disposition: 'Develop the mental habits of precise, determined, careful, and accurate questioning, inquiry, and reasoning.',
+    prereqs: ['g2-sub-blocks', 'g2-add-column'],
+    items: [
+      { tier: 1, x: 58, y: 23 }, { tier: 1, x: 76, y: 41 }, { tier: 1, x: 89, y: 7 },
+      { tier: 2, x: 43, y: 8 }, { tier: 2, x: 52, y: 6 }, { tier: 2, x: 71, y: 4 },
+      { tier: 3, x: 52, y: 27 }, { tier: 3, x: 64, y: 38 }, { tier: 3, x: 80, y: 43 }, { tier: 3, x: 91, y: 56 },
+      { tier: 4, x: 400, y: 135 }, { tier: 4, x: 503, y: 268 }
+    ]
+  },
+  {
     id: 'g3-fraction-build', grade: '3', type: 'fractionBuild', stage: { theme: 'sea' },
     title: 'Build a Fraction',
     goal: 'Cut a whole into equal pieces and color the right number of them.',

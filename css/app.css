@@ -571,3 +571,45 @@ body[data-band="68"] .stage .mascot{display:none}
 .stage .grid2{grid-template-columns:repeat(var(--w),minmax(0,96px));justify-content:center;margin-inline:auto}
 .stage .find{justify-content:center}
 .stage .blocks,.stage .legend{justify-content:center}
+
+/* ---------- grade 2: blocks mat and column arithmetic ---------- */
+.g2-parts{display:grid;grid-template-columns:auto auto;justify-content:center;gap:6px 12px;align-items:end;font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--muted);opacity:.85}
+.g2-parts>span{text-align:right}
+.g2-parts .hund,.g2-parts .ten{height:30px}.g2-parts .hund{width:30px}.g2-parts .ten{width:7px}.g2-parts .one{width:7px;height:7px}
+.g2-mat{display:flex;gap:14px;justify-content:center;align-items:stretch}
+.g2-col{flex:1 1 0;min-width:120px;display:flex;flex-direction:column;gap:8px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--sunk)}
+.g2-head{margin:0;text-align:center;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.g2-pile{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-end;justify-content:center;min-height:76px}
+.g2-o .g2-pile{display:grid;grid-template-columns:repeat(5,22px);gap:6px;justify-content:center}
+.g2-full .g2-pile>:nth-child(-n+10){outline:3px solid var(--warn);outline-offset:1px}
+.g2-count{margin:0;text-align:center;font-family:var(--display);font-weight:600;font-size:1.5rem;font-variant-numeric:tabular-nums}
+.g2-count small{font-family:var(--body);font-size:.75rem;font-weight:400;color:var(--muted)}
+.g2-zero{color:var(--muted);font-family:var(--display);font-size:1.4rem;align-self:center}
+.g2b{display:block;padding:0;border:0;margin:0;position:relative}
+.g2b.one{width:22px;height:22px;border-radius:4px}
+.g2b.ten{width:20px;height:80px;border-radius:4px;background-size:100% 8px}
+.g2b.hund{width:80px;height:80px;border-radius:5px;background-size:8px 8px}
+button.g2b{cursor:pointer;touch-action:manipulation}
+button.g2b:hover{filter:brightness(1.08)}
+.g2b.out{opacity:.3}
+.g2b.out::after{content:"";position:absolute;inset:-3px;background:linear-gradient(135deg,transparent calc(50% - 2px),#c0392b calc(50% - 2px),#c0392b calc(50% + 2px),transparent calc(50% + 2px))}
+.g2-trades{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.g2-trade{font:600 1rem/1.2 var(--body);padding:12px 18px;border-radius:999px;border:2px solid var(--accent);background:var(--surface);color:var(--accent);cursor:pointer;min-height:48px}
+.g2-trade:disabled{border-color:var(--line);color:var(--muted);cursor:default}
+.g2-trade:not(:disabled):hover{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.g2-trade.ghost{border-color:var(--line);color:var(--muted)}
+.g2-col-op{display:grid;grid-template-columns:2.2rem repeat(var(--p),3.6rem);gap:6px 8px;justify-content:center;align-items:center;font-family:var(--display);font-weight:600;font-variant-numeric:tabular-nums}
+.g2-h{text-align:center;font-family:var(--body);font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.g2-sign{text-align:right;font-size:2.2rem}
+.g2-n{text-align:center;font-size:2.6rem;line-height:1.1;min-height:3rem}
+.g2-line{grid-column:1/-1;border-top:3px solid var(--ink)}
+button.g2-top{font:inherit;font-size:2.6rem;background:none;border:2px dashed transparent;border-radius:10px;color:inherit;cursor:pointer;padding:0}
+button.g2-top:hover{border-color:var(--accent)}
+.g2-top s{color:var(--muted);font-size:.6em;margin-right:2px}
+.g2-top.changed b{color:var(--warn)}
+.g2-c,.g2-d{width:100%;text-align:center;font:600 2.4rem/1 var(--display);border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:6px 0;font-variant-numeric:tabular-nums}
+.g2-c{font-size:1.2rem;width:60%;justify-self:center;padding:4px 0;border-style:dashed;color:var(--warn)}
+.g2-d:disabled,.g2-c:disabled{opacity:1;border-color:var(--good)}
+.board-in>.g2-col-op,.board-in>.g2-mat{align-self:center}
+@media (max-width:520px){.g2-col{min-width:0;padding:6px}.g2-o .g2-pile{grid-template-columns:repeat(5,16px);gap:4px}.g2b.one{width:16px;height:16px}.g2b.ten{width:14px;height:60px}.g2b.hund{width:60px;height:60px}}
+.g2-top s{text-decoration-thickness:3px;text-decoration-color:#c0392b}
